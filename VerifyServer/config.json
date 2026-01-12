@@ -1,0 +1,18 @@
+{
+    "email": {
+      "user": "cryrye@163.com",
+      "pass": "MMpp633MytpGwX2U"
+    },
+    "mysql": {
+      "host": "81.68.86.146",
+      "port": 3308,
+      "passwd": "123456."
+    },
+
+    "redis":{
+      "host": "81.68.86.146",
+      "port": 6380,
+      "passwd": "123456"
+    }
+}
+
