@@ -7,9 +7,11 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
+    //使用qss
     QFile qss(":/style/style.qss");
     if(qss.open(QFile::ReadOnly)){
         qDebug("open success");
+        qDebug() << QFile::exists("../../../res/2.jpg");
         QString style = QLatin1String(qss.readAll());
         a.setStyleSheet(style);
         qss.close();
@@ -17,6 +19,7 @@ int main(int argc, char *argv[])
         qDebug("Open failed");
     }
 
+    //
     QString filename = "config.ini";
     QString app_path = QCoreApplication::applicationDirPath();
     QString config_path = QDir::toNativeSeparators(app_path + QDir::separator() + filename);
@@ -30,6 +33,7 @@ int main(int argc, char *argv[])
     LoginDialog login;
     RegisterDialog reg;
 
+    //connectLogin窗口的信息
     QObject::connect(&login, &LoginDialog::switchRegister,&login,[&](){
                 reg.move(login.geometry().center() - reg.rect().center());
                // login.hide();

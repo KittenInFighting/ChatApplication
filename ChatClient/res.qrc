@@ -2,5 +2,7 @@
     <qresource prefix="/">
         <file>res/1.jpg</file>
         <file>style/style.qss</file>
+        <file>res/eye_open.png</file>
+        <file>res/eye_close.png</file>
     </qresource>
 </RCC>

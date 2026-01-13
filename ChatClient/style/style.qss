@@ -90,3 +90,18 @@ QLineEdit#email_lineEdit::placeholder{
 #erro_label[state='err']{
     color:red;
 }
+
+QToolButton#pwdEyeBtn {
+    border: none;
+    background: transparent;
+    padding: 0px;
+}
+
+QToolButton#pwdEyeBtn:hover,
+QToolButton#pwdEyeBtn:pressed,
+QToolButton#pwdEyeBtn:focus {
+    border: none;
+    background: transparent;
+    padding: 0px;
+    outline: none;
+}
