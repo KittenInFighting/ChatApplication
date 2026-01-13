@@ -1,11 +1,11 @@
-#include "ConfigMgr.h"
 #include "Const.h"
+#include "ConfigMgr.h"
 #include <fstream>
 #include <boost/filesystem.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ini_parser.hpp>
 
-
-ConfigMgr::ConfigMgr() 
-{
+ConfigMgr::ConfigMgr(){
 	boost::filesystem::path current_path = boost::filesystem::current_path();
 	boost::filesystem::path config_path = current_path / "config.ini";
 	std::cout << "Config path : " << config_path << std::endl;
@@ -45,5 +45,4 @@ ConfigMgr::ConfigMgr()
 			std::cout << key_value_pair.first << "=" << key_value_pair.second << std::endl;
 		}
 	}
-
 }

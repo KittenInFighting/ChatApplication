@@ -1,18 +1,14 @@
 #include "HttpConnection.h"
 #include "LogicalSystem.h"
-HttpConnection::HttpConnection(boost::asio::io_context& ioc):_socket(ioc)
-{
-
+HttpConnection::HttpConnection(boost::asio::io_context& ioc):_socket(ioc){
 
 }
 
-unsigned char ToHex(unsigned char x)
-{
+unsigned char ToHex(unsigned char x){
 	return  x > 9 ? x + 55 : x + 48;
 }
 
-unsigned char FromHex(unsigned char x)
-{
+unsigned char FromHex(unsigned char x){
 	unsigned char y;
 	if (x >= 'A' && x <= 'Z') y = x - 'A' + 10;
 	else if (x >= 'a' && x <= 'z') y = x - 'a' + 10;
@@ -21,8 +17,7 @@ unsigned char FromHex(unsigned char x)
 	return y;
 }
 
-std::string UrlEncode(const std::string& str)
-{
+std::string UrlEncode(const std::string& str){
 	std::string strTemp = "";
 	size_t length = str.length();
 	for (size_t i = 0; i < length; i++)
@@ -47,8 +42,7 @@ std::string UrlEncode(const std::string& str)
 	return strTemp;
 }
 
-std::string UrlDecode(const std::string& str)
-{
+std::string UrlDecode(const std::string& str){
 	std::string strTemp = "";
 	size_t length = str.length();
 	for (size_t i = 0; i < length; i++)
@@ -68,8 +62,7 @@ std::string UrlDecode(const std::string& str)
 	return strTemp;
 }
 
-auto HttpConnection::Start() -> void
-{
+void HttpConnection::Start(){
 	auto self = shared_from_this();
 	boost::beast::http::async_read(_socket, _buffer, _request, [self](boost::beast::error_code ec, std::size_t bytes_transferred){
 		try {
@@ -88,8 +81,7 @@ auto HttpConnection::Start() -> void
 		});
 }
 
-auto HttpConnection::PreParseGetParam() -> void
-{
+void HttpConnection::PreParseGetParam(){
 	// 提取 URI  
 	auto uri = _request.target();
 	// 查找查询字符串的开始位置（即 '?' 的位置）  
@@ -125,8 +117,7 @@ auto HttpConnection::PreParseGetParam() -> void
 	}
 }
 
-auto HttpConnection::HandleReq() -> void
-{
+void HttpConnection::HandleReq(){
 	//设置版本
 	_response.version(_request.version());
 	_response.keep_alive(false);
@@ -169,8 +160,7 @@ auto HttpConnection::HandleReq() -> void
 	}
 }
 
-auto HttpConnection::WriteResponse() -> void
-{
+void HttpConnection::WriteResponse(){
 	auto self = shared_from_this();
 	_response.content_length(_response.body().size());
 	boost::beast::http::async_write(_socket, _response, [self](boost::beast::error_code ec, std::size_t bytes_transferred){
@@ -179,8 +169,7 @@ auto HttpConnection::WriteResponse() -> void
 		});
 }
 
-auto HttpConnection::CheckDeadline() -> void
-{
+void HttpConnection::CheckDeadline(){
 	auto self = shared_from_this();
 	deadline_.async_wait([self](boost::beast::error_code ec){
 			self->_socket.close(ec);

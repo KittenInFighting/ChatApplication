@@ -1,6 +1,6 @@
-#include "AsioIOServicePool.h"
+#include"AsioIOServicePool.h"
 #include <iostream>
-using namespace std;
+
 AsioIOServicePool::AsioIOServicePool(std::size_t size) :_ioServices(size),_nextIOService(0) {
 	for (std::size_t i = 0; i < size; ++i) {
 		_workGuards.emplace_back(boost::asio::make_work_guard(_ioServices[i]));
@@ -16,7 +16,7 @@ AsioIOServicePool::AsioIOServicePool(std::size_t size) :_ioServices(size),_nextI
 
 AsioIOServicePool::~AsioIOServicePool() {
 	Stop();
-	std::cout << "AsioIOServicePool destruct" << endl;
+	std::cout << "AsioIOServicePool destruct" << std::endl;
 }
 
 boost::asio::io_context& AsioIOServicePool::GetIOService() {
@@ -28,7 +28,7 @@ boost::asio::io_context& AsioIOServicePool::GetIOService() {
 }
 
 void AsioIOServicePool::Stop() {
-	//因为仅仅执行work.reset并不能让iocontext从run的状态中退出
+	//仅仅执行work.reset并不能让iocontext从run的状态中退出
 	//当iocontext已经绑定了读或写的监听事件后，还需要手动stop该服务。
 	for (auto& work : _workGuards) {
 		//把服务先停止

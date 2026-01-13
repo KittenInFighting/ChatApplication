@@ -1,7 +1,6 @@
 #include "RedisMgr.h"
 #include "ConfigMgr.h"
 
-
 RedisMgr::RedisMgr() {
     auto& gCfgMgr = ConfigMgr::Inst();
     auto host = gCfgMgr["Redis"]["Host"];
@@ -10,8 +9,7 @@ RedisMgr::RedisMgr() {
     _con_pool.reset(new RedisConPool(5, host.c_str(), atoi(port.c_str()), pwd.c_str()));
 }
 
-bool RedisMgr::Get(const std::string& key, std::string& value)
-{
+bool RedisMgr::Get(const std::string& key, std::string& value){
     auto connect = _con_pool->getConnection();
     if (connect == nullptr) {
         return false;
@@ -63,30 +61,7 @@ bool RedisMgr::Set(const std::string& key, const std::string& value) {
     return true;
 }
 
-//bool RedisMgr::Auth(const std::string& password)
-//{
-//    auto connect = _con_pool->getConnection();
-//    if (connect == nullptr) {
-//        return false;
-//    }
-//    auto reply = (redisReply*)redisCommand(connect, "AUTH %s", password.c_str());
-//    if (reply->type == REDIS_REPLY_ERROR) {
-//        std::cout << "认证失败" << std::endl;
-//        //执行成功 释放redisCommand执行后返回的redisReply所占用的内存
-//        freeReplyObject(reply);
-//        return false;
-//    }
-//    else {
-//        //执行成功 释放redisCommand执行后返回的redisReply所占用的内存
-//        freeReplyObject(reply);
-//        std::cout << "认证成功" << std::endl;
-//        _con_pool->returnConnection(connect);
-//        return true;
-//    }
-//}
-
-bool RedisMgr::LPush(const std::string& key, const std::string& value)
-{
+bool RedisMgr::LPush(const std::string& key, const std::string& value){
     auto connect = _con_pool->getConnection();
     if (connect == nullptr) {
         return false;
@@ -185,8 +160,7 @@ bool RedisMgr::HSet(const std::string& key, const std::string& hkey, const std::
     return true;
 }
 
-bool RedisMgr::HSet(const char* key, const char* hkey, const char* hvalue, size_t hvaluelen)
-{
+bool RedisMgr::HSet(const char* key, const char* hkey, const char* hvalue, size_t hvaluelen){
     auto connect = _con_pool->getConnection();
     if (connect == nullptr) {
         return false;
@@ -213,8 +187,7 @@ bool RedisMgr::HSet(const char* key, const char* hkey, const char* hvalue, size_
     return true;
 }
 
-std::string RedisMgr::HGet(const std::string& key, const std::string& hkey)
-{
+ auto RedisMgr::HGet(const std::string& key, const std::string& hkey) -> std::string{
     auto connect = _con_pool->getConnection();
     if (connect == nullptr) {
         return "";
@@ -240,8 +213,7 @@ std::string RedisMgr::HGet(const std::string& key, const std::string& hkey)
     return value;
 }
 
-bool RedisMgr::Del(const std::string& key)
-{
+bool RedisMgr::Del(const std::string& key){
     auto connect = _con_pool->getConnection();
     if (connect == nullptr) {
         return false;
@@ -258,8 +230,7 @@ bool RedisMgr::Del(const std::string& key)
     return true;
 }
 
-bool RedisMgr::ExistsKey(const std::string& key)
-{
+bool RedisMgr::ExistsKey(const std::string& key){
     auto connect = _con_pool->getConnection();
     if (connect == nullptr) {
         return false;
@@ -276,8 +247,7 @@ bool RedisMgr::ExistsKey(const std::string& key)
     return true;
 }
 
-void RedisMgr::Close()
-{
+void RedisMgr::Close(){
     _con_pool->Close();
 }
 

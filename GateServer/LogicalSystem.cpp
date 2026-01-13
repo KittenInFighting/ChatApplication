@@ -1,24 +1,23 @@
+#include "RedisMgr.h"
+#include "MysqlMgr.h"
 #include "LogicalSystem.h"
 #include "HttpConnection.h"
 #include "VerifyGrpcClient.h"
-#include "RedisMgr.h"
-#include "MysqlMgr.h"
+#include <json/json.h>
+#include <json/value.h>
+#include <json/reader.h>
 
-auto LogicalSystem::RegGet(std::string url, HttpHandler handler) -> void
-{ 
-	_get_handlers.insert(make_pair(url, handler));
-
-}
-
-auto LogicalSystem::RegPost(std::string url, HttpHandler handler) -> void
-{
-	_post_handlers.insert(make_pair(url, handler));
+void LogicalSystem::RegGet(std::string url, HttpHandler handler){ 
+  _get_handlers.insert(make_pair(url, handler));
 
 }
 
-LogicalSystem::LogicalSystem()
-{
-	//ע��Get����
+void LogicalSystem::RegPost(std::string url, HttpHandler handler){
+  _post_handlers.insert(make_pair(url, handler));
+
+}
+
+LogicalSystem::LogicalSystem(){
 	RegGet("/get_test", [](std::shared_ptr<HttpConnection> connection) {
 		boost::beast::ostream(connection->_response.body()) << "receive get_test req " << std::endl;
 		int i = 0;
@@ -29,9 +28,7 @@ LogicalSystem::LogicalSystem()
 		}
 	});
 
-	//ע��Post����
 	RegPost("/get_verifycode", [](std::shared_ptr<HttpConnection> connection) {
-		//���յ�������ת��String
 		auto body_str = boost::beast::buffers_to_string(connection->_request.body().data());
 		std::cout << "receive body is " << body_str << std::endl;
 		connection->_response.set(boost::beast::http::field::content_type, "text/json");
@@ -48,14 +45,12 @@ LogicalSystem::LogicalSystem()
 			}
 
 		if (!src_root.isMember("email")) {
-			//key������
 			std::cout << "Failed to parse JSON Data! " << std::endl;
 			std::string jsonstr = root.toStyledString();
 			boost::beast::ostream(connection->_response.body()) << jsonstr;
 			return true;
 		}
 
-		//key����
 		auto email = src_root["email"].asString();
 		message::GetVerifyRsp rsp = VerifyGrpcClient::GetInstance()->GetVerifyCode(email);
 
@@ -65,7 +60,6 @@ LogicalSystem::LogicalSystem()
 		std::string jsonstr = root.toStyledString();
 		boost::beast::ostream(connection->_response.body()) << jsonstr;
 		return true;
-
 		});
 
 	RegPost("/user_register", [](std::shared_ptr<HttpConnection> connection) {
@@ -129,8 +123,7 @@ LogicalSystem::LogicalSystem()
 		});
 }
 
-auto LogicalSystem::HandleGet(std::string path, std::shared_ptr<HttpConnection> con) -> bool
-{
+bool LogicalSystem::HandleGet(std::string path, std::shared_ptr<HttpConnection> con){
 	if (_get_handlers.find(path) == _get_handlers.end()) {
 		return false;
 	}
@@ -138,15 +131,14 @@ auto LogicalSystem::HandleGet(std::string path, std::shared_ptr<HttpConnection> 
 	return true;
 }
 
-auto LogicalSystem::HandlePost(std::string path, std::shared_ptr<HttpConnection> con) -> bool
-{
+bool LogicalSystem::HandlePost(std::string path, std::shared_ptr<HttpConnection> con){
 	if (_post_handlers.find(path) == _post_handlers.end()) {
 		return false;
 	}
 	_post_handlers[path](con);
 	return true;
 }
-LogicalSystem::~LogicalSystem()
-{
+
+LogicalSystem::~LogicalSystem(){
 
 }

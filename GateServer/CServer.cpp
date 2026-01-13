@@ -2,17 +2,15 @@
 #include "HttpConnection.h"
 #include "AsioIOServicePool.h"
 
-CServer::CServer(boost::asio::io_context& ioc, unsigned short& port):_ioc(ioc), _acceptor(ioc, tcp::endpoint(tcp::v4(), port)), _socket(ioc) 
-{
+CServer::CServer(boost::asio::io_context& ioc, unsigned short& port):_ioc(ioc), _acceptor(ioc, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)), _socket(ioc){
 
 }
 
-auto CServer::Start() -> void 
-{
+void CServer::Start(){
 	auto self = shared_from_this();
 	auto& io_context = AsioIOServicePool::GetInstance()->GetIOService();
 	std::shared_ptr<HttpConnection> new_con = std::make_shared<HttpConnection>(io_context);
-	_acceptor.async_accept(new_con -> GetSocket(), [self, new_con](boost::beast::error_code ec) {
+	_acceptor.async_accept(new_con -> GetSocket(), [self, new_con](boost::system::error_code ec) {
 		try {
 			//出错放弃当前socket
 			if (ec) {
@@ -25,11 +23,11 @@ auto CServer::Start() -> void
 
 			//继续监听
 			self->Start();
-			/*std::make_shared<HttpConnection>(std::move(self -> _socket))->Start();*/
 		}
-		catch (std::exception& exp){
+		catch (std::exception& exp)
+		{
 			std::cout << "exception is " << exp.what() << std::endl;
 			self->Start();
-			}
-		});
+		}
+	});
 }
