@@ -1,0 +1,92 @@
+QDialog#LoginDialog, #RegisterDialog{
+    background: qlineargradient(
+        x1: 0, y1: 1, x2: 1, y2: 0,
+        stop: 0   rgba(245, 240, 255, 255),
+        stop: 0.5 rgba(248, 250, 255, 255),
+        stop: 1   rgba(215, 241, 255, 255)
+    );
+}
+QDialog#LoginDialog {
+    background: transparent;   /* 让窗口外部透明 */
+}
+QWidget#card {
+    border-radius: 14px;
+    border: 1px solid rgba(0, 0, 0, 8);   /* 极淡边框，不会像黑线 */
+    background: qlineargradient(
+        x1: 0, y1: 0, x2: 0, y2: 1,
+        stop: 0    rgb(242, 249, 255),
+        stop: 0.55 rgb(232, 244, 255),
+        stop: 1    rgb(210, 232, 252)
+    );
+}
+QPushButton#signIn_pushButton,
+QPushButton#register_pushButton,
+QPushButton#get_pushButton{
+    font-size: 16px;
+    border-radius: 12px;
+    color: white;
+    background-color: rgb(0,141,235);
+    border: none;
+}
+
+QToolButton#btnClose {
+    background: transparent;
+    border: none;
+    color: rgba(0, 0, 0, 180);
+    font-size: 18px;
+    min-width: 28px;
+    min-height: 28px;
+}
+QToolButton#btnClose:hover {
+    background-color: rgb(196, 43, 28);
+    border-radius: 8px;
+    color: white;
+}
+QToolButton#btnClose:pressed {
+    background-color: rgb(170, 30, 22);
+    border-radius: 8px;
+    color: white;
+}
+
+#register_label,#forget_label{
+    color:rgb(73,139,233);
+}
+/* 设置LineEdit的样式*/
+QDialog#LoginDialog QLineEdit,
+QDialog#LoginDialog QLineEdit:focus,
+QDialog#RegisterDialog QLineEdit,
+QDialog#RegisterDialog QLineEdit:focus {
+    background: rgb(255, 255, 255);
+    border: 1px solid rgba(0, 0, 0, 10);
+    outline: none;
+    border-radius: 10px;
+    padding: 6px 12px;
+    color: rgb(30,30,30);
+}
+/* 输入框本体字体 */
+QLineEdit#count_lineEdit,
+QLineEdit#pwd_lineEdit,
+QLineEdit#count_lineEdit_2,
+QLineEdit#pwd_lineEdit_2,
+QLineEdit#code_lineEdit,
+QLineEdit#email_lineEdit{
+    font-size: 16px;
+    color: rgb(0, 0, 0);
+}
+
+/* 占位符：更浅的灰色 + 字号 */
+QLineEdit#count_lineEdit::placeholder,
+QLineEdit#pwd_lineEdit::placeholder,
+QLineEdit#count_lineEdit_2::placeholder,
+QLineEdit#pwd_lineEdit_2::placeholder,
+QLineEdit#code_lineEdit::placeholder,
+QLineEdit#email_lineEdit::placeholder{
+    color: rgba(0, 0, 0, 110);   /* 灰度接近截图，可调 90~140 */
+    font-size: 14px;
+}
+#erro_label[state='normal']{
+    color:green;
+}
+#erro_label[state='err']{
+    color:red;
+}
