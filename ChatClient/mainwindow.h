@@ -31,7 +31,7 @@ public:
     ~MainWindow();
 public slots:
     void SlotSwitchReg();
-
+    void SlotSwtichLogin();
 private:
     Ui::MainWindow *ui;
     QStackedWidget *_stack = nullptr;

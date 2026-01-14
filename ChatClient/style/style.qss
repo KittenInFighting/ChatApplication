@@ -21,7 +21,8 @@ QWidget#card {
 }
 QPushButton#signIn_pushButton,
 QPushButton#register_pushButton,
-QPushButton#get_pushButton{
+QPushButton#get_pushButton,
+QPushButton#return_pushBtn{
     font-size: 16px;
     border-radius: 12px;
     color: white;
@@ -33,7 +34,7 @@ QToolButton#btnClose {
     background: transparent;
     border: none;
     color: rgba(0, 0, 0, 180);
-    font-size: 18px;
+    font-size: 18pt;
     min-width: 28px;
     min-height: 28px;
 }
@@ -41,11 +42,13 @@ QToolButton#btnClose:hover {
     background-color: rgb(196, 43, 28);
     border-radius: 8px;
     color: white;
+    font-size: 18pt;
 }
 QToolButton#btnClose:pressed {
     background-color: rgb(170, 30, 22);
     border-radius: 8px;
     color: white;
+    font-size: 18pt;
 }
 
 #register_label,#forget_label{

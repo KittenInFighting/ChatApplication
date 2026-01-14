@@ -7,7 +7,7 @@
 
 RegisterDialog::RegisterDialog(QWidget *parent)
     : QDialog(parent)
-    , ui(new Ui::RegisterDialog)
+    , ui(new Ui::RegisterDialog),_return(6)
 {
     ui->setupUi(this);
 
@@ -36,6 +36,13 @@ RegisterDialog::RegisterDialog(QWidget *parent)
 
     //初始pwd提示widget
     ui->pwd_tipWidget->hide();
+
+    //初始化注册成功返回的定时器
+    _return_timer = new QTimer(this);
+
+    //初始化return_label
+    ui->return_label->setStyleSheet("font-size:18px;");
+    ui->return_label->setTextFormat(Qt::RichText);
 
     //监听lineEdit 的焦点离开事件：处理切到其他lineEdit
     ui->count_lineEdit->installEventFilter(this);
@@ -76,7 +83,7 @@ RegisterDialog::RegisterDialog(QWidget *parent)
         ui->pwdEyeBtn->setIcon(_eyeOpenIcon);
         ui->pwd_lineEdit->setEchoMode(QLineEdit::Normal);
 
-        // 可选：保持光标在末尾
+        // 保持光标在末尾
         // ui->pwd_lineEdit->setFocus();
         // ui->pwd_lineEdit->setCursorPosition(ui->pwd_lineEdit->text().length());
     });
@@ -96,13 +103,35 @@ RegisterDialog::RegisterDialog(QWidget *parent)
         // 如果清空了密码，回到“隐藏模式”，避免还处于明文状态
         if (empty) {
             ui->pwdEyeBtn->setIcon(_eyeCloseIcon); // closeIcon 你初始化时保存成成员
-            ui->pwd_lineEdit->setEchoMode(QLineEdit::Password);
+            ui->pwd_lineEdit->setEchoMode(QLineEdit::Password);    
         }
     });
+
+    //连接注册返回定时器信号槽
+    connect(_return_timer, &QTimer::timeout, [this](){
+        if(_return==0){
+            _return_timer->stop();
+            emit sigSwitchLogin();
+            return;
+        }
+        _return--;
+        //auto str = QString("%1 s后注册界面将自动关闭").arg(_return);
+        ui->return_label->setText(
+            QString("<span style='color:green;'>%1</span>"
+                    "<span style='color:red;'> s后注册界面将自动关闭</span>")
+                .arg(_return)
+            );
+
+    });
+
 }
 
 RegisterDialog::~RegisterDialog()
 {
+    if (ui->stackedWidget->currentWidget() != ui->page_1) {
+        ui->stackedWidget->setCurrentWidget(ui->page_1);//切回page_1
+    }
+    qDebug() << "destruct RegisterDlg" << "\n";
     qApp->removeEventFilter(this);
     delete ui;
 }
@@ -192,6 +221,7 @@ void RegisterDialog::initHttpHandlers()
         showTip(tr("用户注册成功"), true);
         qDebug() << "user uuid is " << jsonObj["uid"].toString();
         qDebug() << "email is " << email ;
+        ChangePage();
     });
 }
 
@@ -447,3 +477,31 @@ bool RegisterDialog::hasBadRepeatOrSequence(const QString& s) const
 
     return false;
 }
+
+void RegisterDialog::ChangePage()
+{
+    _return = 6;
+    ui->return_label->setTextFormat(Qt::RichText);
+    ui->return_label->setText(
+                        QString("<span style='color:green;'>%1</span>"
+                                "<span style='color:red;'> s后注册界面将自动关闭</span>")
+            .arg(_return));
+
+    ui->return_label->show();
+    ui->return_label->update(); // 立即刷新
+
+    _return_timer->stop();
+    ui->stackedWidget->setCurrentWidget(ui->page_2);
+
+    // 启动定时器，设置间隔为1000毫秒（1秒）
+    _return_timer->start(1000);
+}
+
+
+
+void RegisterDialog::on_return_pushBtn_clicked()
+{
+    _return_timer->stop();
+    emit sigSwitchLogin();
+}
+

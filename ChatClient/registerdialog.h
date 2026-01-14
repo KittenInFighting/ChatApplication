@@ -26,17 +26,23 @@ private slots:
     void on_get_pushButton_clicked();
     void slot_reg_mod_finish(ReqId id, QString res, ErrorCodes err);
     void on_register_pushButton_clicked();
+    void on_return_pushBtn_clicked();
+
+signals:
+    void sigSwitchLogin();
 private:
     QMap<TipErr, QString> _tip_errs;
     Ui::RegisterDialog *ui;
     QMap<ReqId, std::function<void(const QJsonObject&)>> _handlers;
     QIcon _eyeOpenIcon;
     QIcon _eyeCloseIcon;
+    QTimer* _return_timer;
+    int _return;
     void showTip(QString str,bool b_ok);
     void initHttpHandlers();
     void checkNotEmpty(QLineEdit* edit, QLabel* errLabel, const QString& msg);
     bool clickedOutside(QLineEdit* edit, QObject* watchedObj) const;
-
+    void ChangePage();//切换界面
     void checkPwd();                 // 检验密码
     QString pwdErrorMsg() const;     // 返回对应错误提示
     bool hasBadRepeatOrSequence(const QString& s) const; // 检验是否有连续重复6次以上的字母或数字

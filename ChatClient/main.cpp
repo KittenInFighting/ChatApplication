@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
     QFile qss(":/style/style.qss");
     if(qss.open(QFile::ReadOnly)){
         qDebug("open success");
-        qDebug() << QFile::exists("../../../res/2.jpg");
+        //qDebug() << QFile::exists("../../../res/1.jpg");
         QString style = QLatin1String(qss.readAll());
         a.setStyleSheet(style);
         qss.close();
@@ -27,21 +27,8 @@ int main(int argc, char *argv[])
     QString gate_host = settings.value("GateServer/host").toString();
     QString gate_port = settings.value("GateServer/port").toString();
     gate_url_prefix = "http://" + gate_host + ":" + gate_port;
-    // MainWindow w;
-    // w.show();
 
-    LoginDialog login;
-    RegisterDialog reg;
-
-    //connectLogin窗口的信息
-    QObject::connect(&login, &LoginDialog::switchRegister,&login,[&](){
-                reg.move(login.geometry().center() - reg.rect().center());
-               // login.hide();
-                reg.adjustSize();
-                reg.show();
-            });
-
-    login.adjustSize();
-    login.show();
+    MainWindow mainwindow;
+    //mainwindow.show();
     return a.exec();
 }

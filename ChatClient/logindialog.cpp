@@ -4,6 +4,8 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QResizeEvent>
+#include <QCloseEvent>
+#include <QDebug>
 
 LoginDialog::LoginDialog(QWidget *parent)
     : QDialog(parent)
@@ -19,15 +21,16 @@ LoginDialog::LoginDialog(QWidget *parent)
     //设置窗口右上方的closeBtn
     connect(ui->btnClose, &QToolButton::clicked, this, &LoginDialog::close);
     // 让头像 QLabel 固定成正方形
-    ui->label_2->setFixedSize(80, 80);
-    ui->label_2->setScaledContents(false);
+    ui->head_label->setFixedSize(80, 80);
+    ui->head_label->setScaledContents(false);
 
-    // 2) 设置一张头像（你可以换成你的资源路径）
+    // 2) 设置一张头像
     setAvatar(":/res/1.jpg");
 
     // 让 label 不吃背景
-    ui->label_2->setStyleSheet("background: transparent;");
+    ui->head_label->setStyleSheet("background: transparent;");
 
+    //geiregister_label绑定点击事件
     ui -> register_label -> setCursor(Qt::PointingHandCursor);
     connect(ui->register_label,&ClickableLabel::clicked,this,&LoginDialog::switchRegister);
 
@@ -41,6 +44,7 @@ LoginDialog::LoginDialog(QWidget *parent)
 
 LoginDialog::~LoginDialog()
 {
+    qDebug() << "destruct LoginDlg" << "\n";
     delete ui;
 }
 
@@ -58,15 +62,21 @@ void LoginDialog::resizeEvent(QResizeEvent *event)
     updateAvatar();
 }
 
+void LoginDialog::closeEvent(QCloseEvent *event)
+{
+    emit sigLoginClosed();
+    QDialog::closeEvent(event);
+}
+
 void LoginDialog::updateAvatar()
 {
-    if (_avatarSrc.isNull() || !ui->label_2) return;
+    if (_avatarSrc.isNull() || !ui->head_label) return;
 
-    int d = qMin(ui->label_2->width(), ui->label_2->height());
+    int d = qMin(ui->head_label->width(), ui->head_label->height());
     if (d <= 0) return;
 
     QPixmap round = makeRoundPixmap(_avatarSrc, d,3);
-    ui->label_2->setPixmap(round);
+    ui->head_label->setPixmap(round);
 }
 
 QPixmap LoginDialog::makeRoundPixmap(const QPixmap &src, int diameter,int borderWidth)
@@ -122,3 +132,5 @@ void LoginDialog::mouseMoveEvent(QMouseEvent *e)
         e->accept();
     }
 }
+
+

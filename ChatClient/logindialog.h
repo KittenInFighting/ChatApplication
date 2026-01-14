@@ -22,6 +22,7 @@ public:
     void setAvatar(const QString &path);
 protected:
     void resizeEvent(QResizeEvent *event) override;
+    void closeEvent(QCloseEvent *event) override;//重写close事件
 private:
     Ui::LoginDialog *ui;
     QPixmap _avatarSrc;
@@ -30,9 +31,9 @@ private:
     static QPixmap makeRoundPixmap(const QPixmap &src, int diameter,int borderWidth);
     void mouseMoveEvent(QMouseEvent *e)override;
     void mousePressEvent(QMouseEvent *e)override;
-
 signals:
-    void switchRegister();
+    void switchRegister();//用于激活注册页面
+    void sigLoginClosed();//用于发送关闭信号
 };
 
 #endif // LOGINDIALOG_H
