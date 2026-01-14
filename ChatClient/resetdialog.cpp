@@ -47,6 +47,17 @@ bool ResetDialog::checkUserValid()
         return false;
     }
 
+    //不能包含空格
+    QRegularExpression reSpace("\\s");
+    if (ui->user_edit->text().contains(reSpace)) {
+        AddTipErr(TipErr::TIP_USER_ERR, tr("用户名不能包含空格"));
+        return false;
+    }
+    QRegularExpression re("^[A-Za-z0-9_]+$");
+    if (!re.match(ui->user_edit->text()).hasMatch()) {
+        AddTipErr(TipErr::TIP_USER_ERR, tr("用户名只能包含字母、数字或下划线"));
+        return false;
+    }
     DelTipErr(TipErr::TIP_USER_ERR);
     return true;
 }
@@ -212,6 +223,7 @@ void ResetDialog::initHandlers()
         qDebug()<< "user uuid is " <<  jsonObj["uuid"].toString();
     });
 }
+
 bool ResetDialog::hasBadRepeatOrSequence(const QString& s)
 {
     //检测重复：例如 111111 或 aaaaaa（连续相同字符 >= 6）

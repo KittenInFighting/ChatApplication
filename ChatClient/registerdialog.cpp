@@ -90,6 +90,7 @@ RegisterDialog::RegisterDialog(QWidget *parent)
         if (!ui->pwd_tipWidget->isVisible())ui->pwd_tipWidget->show();
     });
 
+
     //设置pwdEyeBtn的槽函数
     connect(ui->pwdEyeBtn, &QToolButton::pressed, this, [this]() {
         ui->pwdEyeBtn->setIcon(_eyeOpenIcon);
@@ -284,6 +285,7 @@ bool RegisterDialog::eventFilter(QObject* watched, QEvent* event)
             checkNotEmpty(ui->count_lineEdit, ui->count_errLabel, "账号不可以为空");
         } else if (watched == ui->email_lineEdit) {
             checkNotEmpty(ui->email_lineEdit, ui->email_errLabel, "请输入邮箱地址");
+            checkCount();
         }else if (watched == ui->pwd_lineEdit) {
             ui->pwd_tipWidget->hide();
             checkPwd();
@@ -297,11 +299,13 @@ bool RegisterDialog::eventFilter(QObject* watched, QEvent* event)
         // 校验 count
         if (ui->count_lineEdit->hasFocus() && clickedOutside(ui->count_lineEdit, watched)) {
             checkNotEmpty(ui->count_lineEdit, ui->count_errLabel, "账号不可以为空");
+            checkCount();
         }
 
         // 校验 email
         if (ui->email_lineEdit->hasFocus() && clickedOutside(ui->email_lineEdit, watched)) {
             checkNotEmpty(ui->email_lineEdit, ui->email_errLabel, "邮箱不可以为空");
+
         }
 
         //校验密码
@@ -360,10 +364,36 @@ void RegisterDialog::checkPwd()
         // 输入框红边框
         ui->pwd_lineEdit->setStyleSheet("border:1px solid #ff4d4f;");
     } else {
-        // 通过：隐藏错误（布局回归）
+        // 通过：隐藏错误
         ui->pwd_errLabel->hide();
         ui->pwd_lineEdit->setStyleSheet("");
     }
+}
+
+bool RegisterDialog::checkCount()
+{
+    const QString raw = ui->count_lineEdit->text();
+    const QString trimmed = raw.trimmed();
+
+    if (raw.contains(QRegularExpression("\\s"))) {
+        ui->count_errLabel->setText("账号不能包含空格");
+        ui->count_errLabel->show();
+        ui->count_lineEdit->setStyleSheet("border:1px solid #ff4d4f;");
+        return false;
+    }
+
+    QRegularExpression re("^[A-Za-z0-9_]+$");
+    if (!re.match(raw).hasMatch()) {
+        ui->count_errLabel->setText("账号只能包含字母、数字或下划线");
+        ui->count_errLabel->show();
+        ui->count_lineEdit->setStyleSheet("border:1px solid #ff4d4f;");
+        return false;
+    }
+
+    ui->count_errLabel->hide();
+    ui->count_lineEdit->setStyleSheet("");
+    return true;
+
 }
 
 // 返回第一条命中的错误提示；返回 "" 表示通过

@@ -44,7 +44,8 @@ private:
     void checkNotEmpty(QLineEdit* edit, QLabel* errLabel, const QString& msg);
     bool clickedOutside(QLineEdit* edit, QObject* watchedObj) const;
     void ChangePage();//切换界面
-    void checkPwd();                 // 检验密码
+    void checkPwd(); // 检验密码
+    bool checkCount();
     QString pwdErrorMsg() const;     // 返回对应错误提示
     bool hasBadRepeatOrSequence(const QString& s) const; // 检验是否有连续重复6次以上的字母或数字
 };

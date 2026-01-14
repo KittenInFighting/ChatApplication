@@ -1,12 +1,13 @@
 #include "logindialog.h"
 #include "ui_logindialog.h"
+#include "httpmgr.h"
 
 #include <QPainter>
 #include <QPainterPath>
 #include <QResizeEvent>
 #include <QCloseEvent>
 #include <QDebug>
-
+#include <QRegularExpression>
 LoginDialog::LoginDialog(QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::LoginDialog)
@@ -20,6 +21,9 @@ LoginDialog::LoginDialog(QWidget *parent)
 
     //设置窗口右上方的closeBtn
     connect(ui->btnClose, &QToolButton::clicked, this, &LoginDialog::close);
+
+    //初始禁用登录按钮
+    ui->signIn_pushButton->setEnabled(false);
     // 让头像 QLabel 固定成正方形
     ui->head_label->setFixedSize(80, 80);
     ui->head_label->setScaledContents(false);
@@ -44,6 +48,19 @@ LoginDialog::LoginDialog(QWidget *parent)
 
     //设置密码不可见
     ui->pwd_lineEdit->setEchoMode(QLineEdit::Password);
+
+    //每次lineEdit变动判断是否满足双非空的sign_pushButton的激活条件
+    auto updateSignInState = [this](const QString &) {
+        bool ready = !ui->count_lineEdit->text().trimmed().isEmpty()
+                     &&!ui->pwd_lineEdit->text().trimmed().isEmpty();
+        ui->signIn_pushButton->setEnabled(ready);
+    };
+    connect(ui->count_lineEdit, &QLineEdit::textChanged, this, updateSignInState);
+    connect(ui->pwd_lineEdit, &QLineEdit::textChanged, this, updateSignInState);
+
+    //连接登录回包信号
+    connect(HttpMgr::GetInstance().get(), &HttpMgr::sig_login_mod_finish, this,
+            &LoginDialog::slot_login_mod_finish);
 }
 
 LoginDialog::~LoginDialog()
@@ -121,12 +138,183 @@ QPixmap LoginDialog::makeRoundPixmap(const QPixmap &src, int diameter,int border
     return dst;
 }
 
+bool LoginDialog::checkCount()
+{
+    const QString raw = ui->count_lineEdit->text();
+    const QString trimmed = raw.trimmed();
+
+    if (trimmed.isEmpty()) {
+        return false;
+    }
+
+    if (raw.contains(QRegularExpression("\\s"))) {
+        return false;
+    }
+
+    QRegularExpression re("^[A-Za-z0-9_]+$");
+    if (!re.match(raw).hasMatch()) {
+        return false;
+    }
+
+    ui->count_lineEdit->setStyleSheet("");
+    return true;
+}
+
+bool LoginDialog::checkPwd()
+{
+    // 取文本并去掉前后空格
+    const QString raw = ui->pwd_lineEdit->text();
+    const QString textTrimmed = raw.trimmed();
+
+    // 1) 不能为空
+    if (textTrimmed.isEmpty()) {
+        return false;
+    }
+
+    // 2) 长度 8-16
+    const int len = raw.length();
+    if (len < 8 || len > 16) {
+        return false;
+    }
+
+    // 3) 不能包含空格（包含任何空白字符：空格/tab/换行等）
+    static QRegularExpression reSpace("\\s");
+    if (raw.contains(reSpace)) {
+        return false;
+    }
+
+    // 4) 不能包含连续/重复6位以上的字母或数字
+    if (hasBadRepeatOrSequence(raw)) {
+        return "密码不能包含连续或重复6位以上的字母/数字";
+    }
+
+    // 5) 必须包含【字母、数字、符号】中的至少两种
+    bool hasLetter = false;
+    bool hasDigit  = false;
+    bool hasSymbol = false;
+
+    for (const QChar ch : raw) {
+        if (ch.isLetter()) {
+            hasLetter = true;
+        } else if (ch.isDigit()) {
+            hasDigit = true;
+        } else {
+            // 这里把“非字母非数字”的都当作符号
+            hasSymbol = true;
+        }
+    }
+
+    int categories = 0;
+    if (hasLetter) categories++;
+    if (hasDigit)  categories++;
+    if (hasSymbol) categories++;
+
+    if (categories < 2) {
+        return false;
+    }
+
+    // 全部通过
+    return true;
+}
+
+void LoginDialog::initHttpHandlers()
+{
+    //注册获取登录回包逻辑
+    _handlers.insert(ReqId::ID_LOGIN_USER, [this](QJsonObject jsonObj){
+        int error = jsonObj["error"].toInt();
+        if(error != ErrorCodes::SUCCESS){
+           // 添加错误处理
+            return;
+        }
+        auto user = jsonObj["user"].toString();
+        //登录成功处理
+        qDebug()<< "user is " << user ;
+    });
+}
+
+bool LoginDialog::hasBadRepeatOrSequence(const QString& s) const
+{
+    // --- A) 检测重复：例如 111111 或 aaaaaa（连续相同字符 >= 6）
+    int repeatCount = 1;
+    for (int i = 1; i < s.size(); ++i) {
+        const QChar prev = s[i - 1];
+        const QChar curr = s[i];
+
+        // 只针对字母/数字（按你的规则）
+        if (!prev.isLetterOrNumber() || !curr.isLetterOrNumber()) {
+            repeatCount = 1;
+            continue;
+        }
+
+        if (curr == prev) {
+            repeatCount++;
+            if (repeatCount >= 6) return true;
+        } else {
+            repeatCount = 1;
+        }
+    }
+
+    // 检测递增连续：abcdefg、123456（连续递增 >= 6）
+    // - 字母按不区分大小写处理：a b c... / A B C... 都算连续
+    // - 数字按 0-9 递增：1 2 3 4 5 6
+    int seqCount = 1;
+
+    auto normChar = [](QChar c) -> QChar {
+        // 字母统一转小写，数字保持
+        if (c.isLetter()) return c.toLower();
+        return c;
+    };
+
+    for (int i = 1; i < s.size(); ++i) {
+        QChar prev = s[i - 1];
+        QChar curr = s[i];
+
+        if (!prev.isLetterOrNumber() || !curr.isLetterOrNumber()) {
+            seqCount = 1;
+            continue;
+        }
+
+        prev = normChar(prev);
+        curr = normChar(curr);
+
+        // 必须同一类：都是数字 or 都是字母
+        const bool bothDigit  = prev.isDigit()  && curr.isDigit();
+        const bool bothLetter = prev.isLetter() && curr.isLetter();
+        if (!bothDigit && !bothLetter) {
+            seqCount = 1;
+            continue;
+        }
+
+        // 判断是否递增连续：curr == prev + 1
+        if (curr.unicode() == prev.unicode() + 1) {
+            seqCount++;
+            if (seqCount >= 6) return true;
+        } else {
+            seqCount = 1;
+        }
+    }
+
+    return false;
+}
+
 void LoginDialog::mousePressEvent(QMouseEvent *e)
 {
     if (e->button() == Qt::LeftButton) {
+        QWidget *child = childAt(e->pos());
+        if (child && (child == ui->signIn_pushButton || ui->signIn_pushButton->isAncestorOf(child))) {
+            m_dragging = false;
+            return;
+        }
+        m_dragging = true;
         m_dragPos = e->globalPosition().toPoint() - frameGeometry().topLeft();
         e->accept();
     }
+}
+
+void LoginDialog::mouseReleaseEvent(QMouseEvent *e)
+{
+    m_dragging = false;
+    QDialog::mouseReleaseEvent(e);
 }
 
 void LoginDialog::slot_forget_pwd()
@@ -135,12 +323,61 @@ void LoginDialog::slot_forget_pwd()
     emit switchReset();
 }
 
+void LoginDialog::slot_login_mod_finish(ReqId id, QString res, ErrorCodes err)
+{
+    if(err != ErrorCodes::SUCCESS){
+        //实现一个err_label用于showTip(tr("网络请求错误"),false);
+        return;
+    }
+
+    // 解析 JSON 字符串,res需转化为QByteArray
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(res.toUtf8());
+    //json解析错误
+    if(jsonDoc.isNull()){
+        //实现一个err_label用于showTip(tr("json解析错误"),false);
+        return;
+    }
+
+    //json解析错误
+    if(!jsonDoc.isObject()){
+        //实现一个err_label用于showTip(tr("json解析错误"),false);
+        return;
+    }
+
+
+    //调用对应的逻辑,根据id回调。
+    _handlers[id](jsonDoc.object());
+    return;
+}
+
 void LoginDialog::mouseMoveEvent(QMouseEvent *e)
 {
-    if (e->buttons() & Qt::LeftButton) {
+    if (e->buttons() & Qt::LeftButton && m_dragging) {
         move(e->globalPosition().toPoint() - m_dragPos);
         e->accept();
     }
 }
 
+void LoginDialog::on_signIn_pushButton_clicked()
+{
+    qDebug()<<"login btn clicked";
+    if(checkCount() == false || checkPwd() == false){
+        qDebug()<<"Count or Pwd Error" << "\n";
+        return;
+    }
+
+    // if(checkPwd() == false){
+    //     qDebug()<<"Pwd Error" << "\n";
+    //     return ;
+    // }
+
+    auto user = ui->count_lineEdit->text();
+    auto pwd = ui->pwd_lineEdit->text();
+    //发送http请求登录
+    QJsonObject json_obj;
+    json_obj["user"] = user;
+    json_obj["passwd"] = QString(pwd);
+    HttpMgr::GetInstance()->PostHttpReq(QUrl(gate_url_prefix+"/user_login"),
+                                        json_obj, ReqId::ID_LOGIN_USER,Modules::LOGINMOD);
+}
 

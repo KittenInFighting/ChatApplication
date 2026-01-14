@@ -19,6 +19,17 @@ QWidget#card {
         stop: 1    rgb(210, 232, 252)
     );
 }
+QPushButton#signIn_pushButton:disabled{
+    background-color: rgb(170, 210, 245);
+    color: rgba(255, 255, 255, 180);
+}
+
+QPushButton#signIn_pushButton:pressed:enabled{
+    background-color: rgb(0, 120, 210);
+    color: rgba(255, 255, 255, 220);
+    padding-top: 1px;
+}
+
 QPushButton#signIn_pushButton,
 QPushButton#register_pushButton,
 QPushButton#get_pushButton,
