@@ -38,6 +38,7 @@ private:
     QIcon _eyeCloseIcon;
     QTimer* _return_timer;
     int _return;
+    void setupPwdEyeButton();//创建PwdEyeBtn
     void showTip(QString str,bool b_ok);
     void initHttpHandlers();
     void checkNotEmpty(QLineEdit* edit, QLabel* errLabel, const QString& msg);

@@ -26,9 +26,10 @@ private slots:
     void slot_http_finish(ReqId id, QString res, ErrorCodes err, Modules mod);
 
 signals:
-    void sig_http_finish(ReqId id, QString res, ErrorCodes err, Modules mod);
-    void sig_reg_mod_finish(ReqId id, QString res, ErrorCodes err);
-
+    void sig_http_finish(ReqId id, QString res, ErrorCodes err, Modules mod);//http通信
+    void sig_reg_mod_finish(ReqId id, QString res, ErrorCodes err);//注册
+    void sig_reset_mod_finish(ReqId id, QString res, ErrorCodes err);//重重密码
+    void sig_login_mod_finish(ReqId id, QString res, ErrorCodes err);//登录
 };
 
 #endif // HTTPMGR_H

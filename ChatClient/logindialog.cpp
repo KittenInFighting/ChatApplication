@@ -34,6 +34,10 @@ LoginDialog::LoginDialog(QWidget *parent)
     ui -> register_label -> setCursor(Qt::PointingHandCursor);
     connect(ui->register_label,&ClickableLabel::clicked,this,&LoginDialog::switchRegister);
 
+    //forget_label绑定点击事件
+    ui->forget_label->setCursor(Qt::PointingHandCursor);
+    connect(ui->forget_label, &ClickableLabel::clicked, this, &LoginDialog::slot_forget_pwd);
+
     //设置LineEdit文字居中
     ui->count_lineEdit->setAlignment(Qt::AlignHCenter);
     ui->pwd_lineEdit->setAlignment(Qt::AlignHCenter);
@@ -123,6 +127,12 @@ void LoginDialog::mousePressEvent(QMouseEvent *e)
         m_dragPos = e->globalPosition().toPoint() - frameGeometry().topLeft();
         e->accept();
     }
+}
+
+void LoginDialog::slot_forget_pwd()
+{
+    qDebug()<<"slot forget pwd";
+    emit switchReset();
 }
 
 void LoginDialog::mouseMoveEvent(QMouseEvent *e)

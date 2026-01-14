@@ -20,6 +20,18 @@ RegisterDialog::RegisterDialog(QWidget *parent)
     ui->pwdEyeBtn->setIcon(_eyeCloseIcon);
     //初始设置不可见
     ui->pwdEyeBtn->setVisible(false);
+    // 把按钮放进 lineEdit 里面
+    ui->pwdEyeBtn->setParent(ui->pwd_lineEdit);
+    ui->pwdEyeBtn->setStyleSheet("QToolButton{border:0;padding:0;}");
+    // 固定位置到右侧中间
+    const int btnSize = ui->pwdEyeBtn->sizeHint().height();
+    ui->pwdEyeBtn->setFixedSize(btnSize, btnSize);
+    const QRect r = ui->pwd_lineEdit->rect();
+    const int x = r.right() - ui->pwdEyeBtn->width() - 4;
+    const int y = (r.height() - ui->pwdEyeBtn->height()) / 2;
+    ui->pwdEyeBtn->move(x, y);
+    ui->pwdEyeBtn->raise();
+
     //设置pwd_tipWidget里面的提示内容
     ui->pwd_tip_noSpace->setText("不能包含空格");
     ui->pwd_tip_len->setText("长度为8-16个字符");
@@ -503,5 +515,33 @@ void RegisterDialog::on_return_pushBtn_clicked()
 {
     _return_timer->stop();
     emit sigSwitchLogin();
+}
+
+void RegisterDialog::setupPwdEyeButton()
+{
+    QLineEdit* edit = ui->pwd_lineEdit;
+    if (!edit) return;
+
+    // 1) 代码创建一个 QToolButton，名字必须和你要求的一样
+    auto* btn = new QToolButton(edit);                // parent 设为 lineEdit => “嵌入”到输入框内部
+    btn->setObjectName("pwdEyeBtn");                  // 名字相同
+    btn->setCursor(Qt::PointingHandCursor);
+
+    // 2) 外观：去边框（像内嵌图标按钮）
+    btn->setStyleSheet("QToolButton{border:none;padding:0px;}");
+
+    // 3) 大小：按你图标/界面调整
+    btn->setFixedSize(24, 24);
+
+    // 4) 给输入框右侧留空，避免文字盖住按钮
+    const int rightMargin = btn->width() + 8;
+    edit->setTextMargins(0, 0, rightMargin, 0);
+
+    // 5) 放到输入框内部右侧并垂直居中（你说长度固定，这样一次定位就够）
+    const int paddingRight = 4;
+    int x = edit->rect().right() - btn->width() - paddingRight;
+    int y = (edit->height() - btn->height()) / 2;
+    btn->move(x, y);
+    btn->raise();
 }
 

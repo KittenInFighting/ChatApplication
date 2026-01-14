@@ -15,6 +15,7 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     registerdialog.cpp \
+    resetdialog.cpp \
     timerbtn.cpp
 
 HEADERS += \
@@ -24,13 +25,15 @@ HEADERS += \
     logindialog.h \
     mainwindow.h \
     registerdialog.h \
+    resetdialog.h \
     singleton.h \
     timerbtn.h
 
 FORMS += \
     logindialog.ui \
     mainwindow.ui \
-    registerdialog.ui
+    registerdialog.ui \
+    resetdialog.ui
 RC_ICONS= Main.ico
 DESTDIR = ./bin
 # Default rules for deployment.

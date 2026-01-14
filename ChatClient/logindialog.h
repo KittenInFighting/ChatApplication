@@ -34,6 +34,9 @@ private:
 signals:
     void switchRegister();//用于激活注册页面
     void sigLoginClosed();//用于发送关闭信号
+    void switchReset();
+public slots:
+    void slot_forget_pwd();
 };
 
 #endif // LOGINDIALOG_H

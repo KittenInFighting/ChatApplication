@@ -17,14 +17,20 @@ MainWindow::MainWindow(QWidget *parent)
     _login_dlg -> adjustSize();
     _login_dlg -> show();
 
-    //connect Login窗口的信息
+    //connect Login窗口的处理
+    //注册
     connect(_login_dlg, &LoginDialog::switchRegister,this,&MainWindow::SlotSwitchReg);
+    //忘记密码
+    connect(_login_dlg, &LoginDialog::switchReset, this, &MainWindow::SlotSwitchReset);
+
     //如果登录界面关闭，则注册页面也关闭
     connect(_login_dlg, &LoginDialog::sigLoginClosed, this, [this]() {
         if (_reg_dlg) {
             _reg_dlg->close();
         }
     });
+
+
 }
 
 void MainWindow::adaptToPage(QWidget *page)
@@ -46,7 +52,7 @@ void MainWindow::SlotSwitchReg()
         connect(_reg_dlg, &QObject::destroyed, this, [this]() {
             _reg_dlg = nullptr; // 避免悬空指针
         });
-        //连接注册界面返回登录界面信号
+        //连接注册界面返回登录界面信号和槽函数
         connect(_reg_dlg, &RegisterDialog::sigSwitchLogin, this, &MainWindow::SlotSwtichLogin);
     }
 
@@ -68,9 +74,45 @@ void MainWindow::SlotSwitchReg()
     _reg_dlg -> show();
 }
 
+void MainWindow::SlotSwitchReset()
+{
+    //创建一个CentralWidget
+    if (!_reset_dlg) {
+        _reset_dlg = new ResetDialog();
+        _reset_dlg->setAttribute(Qt::WA_DeleteOnClose);//关闭就析构
+        connect(_reset_dlg, &QObject::destroyed, this, [this]() {
+            _reset_dlg = nullptr; // 避免悬空指针
+        });
+        //连接注册 返回登录信号和槽函数
+        connect(_reset_dlg, &ResetDialog::switchLogin2, this, &::MainWindow::SlotSwtichLogin2);
+    }
+    _reset_dlg -> adjustSize();
+    QScreen *screen = QGuiApplication::screenAt(QCursor::pos()); // 获取鼠标所在屏幕
+    if (!screen) { // 如果没取到屏幕
+        screen = QGuiApplication::primaryScreen(); // 使用主屏
+    }
+    if (screen) { // 确保屏幕有效
+        QRect screenRect = screen->availableGeometry(); // 屏幕可用区域
+        QPoint center = screenRect.center(); // 屏幕中心点
+        QRect dlgRect(QPoint(0, 0), _reset_dlg->size()); // 对话框矩形
+        _reset_dlg->move(center - dlgRect.center()); // 移动到屏幕中央
+    }
+    _reset_dlg -> show();
+}
+//
 void MainWindow::SlotSwtichLogin()
 {
     if (_reg_dlg) {
         _reg_dlg->close(); // 触发析构
     }
 }
+
+//从重置界面返回登录界面
+void MainWindow::SlotSwtichLogin2()
+{
+    if (_reset_dlg) {
+        _reset_dlg->close(); // 触发析构
+    }
+}
+
+
