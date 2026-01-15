@@ -8,6 +8,7 @@
 #include <QPoint>
 #include <QMouseEvent>
 #include <QGraphicsDropShadowEffect>
+#include <QPainter>
 
 namespace Ui {
 class LoginDialog;
@@ -35,6 +36,7 @@ private:
     bool checkCount();//初步检测账号
     bool checkPwd();//初步检测密码
     void initHttpHandlers();//处理http回包
+    void showLoginErrorDialog();
     bool hasBadRepeatOrSequence(const QString& s) const;
     void mouseMoveEvent(QMouseEvent *e)override;
     void mousePressEvent(QMouseEvent *e)override;
@@ -50,4 +52,23 @@ private slots:
     void on_signIn_pushButton_clicked();
 };
 
+class RoundedMask : public QWidget {
+public:
+    explicit RoundedMask(QWidget* parent, int radius)
+        : QWidget(parent), radius_(radius) {
+        setAttribute(Qt::WA_TranslucentBackground, true);
+    }
+
+protected:
+    void paintEvent(QPaintEvent*) override {
+        QPainter p(this);
+        p.setRenderHint(QPainter::Antialiasing, true);
+        p.setPen(Qt::NoPen);
+        p.setBrush(QColor(0, 0, 0, 120)); // 半透明黑
+        p.drawRoundedRect(rect().adjusted(0, 0, -1, -1), radius_, radius_);
+    }
+
+private:
+    int radius_;
+};
 #endif // LOGINDIALOG_H

@@ -8,6 +8,12 @@
 #include <QCloseEvent>
 #include <QDebug>
 #include <QRegularExpression>
+#include <QMessageBox>
+#include <QTimer>
+#include <QPropertyAnimation>
+#include <QEasingCurve>
+#include <QAbstractAnimation>
+
 LoginDialog::LoginDialog(QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::LoginDialog)
@@ -185,7 +191,7 @@ bool LoginDialog::checkPwd()
 
     // 4) 不能包含连续/重复6位以上的字母或数字
     if (hasBadRepeatOrSequence(raw)) {
-        return "密码不能包含连续或重复6位以上的字母/数字";
+        return false;
     }
 
     // 5) 必须包含【字母、数字、符号】中的至少两种
@@ -224,6 +230,7 @@ void LoginDialog::initHttpHandlers()
         int error = jsonObj["error"].toInt();
         if(error != ErrorCodes::SUCCESS){
            // 添加错误处理
+            showLoginErrorDialog();
             return;
         }
         auto user = jsonObj["user"].toString();
@@ -232,9 +239,97 @@ void LoginDialog::initHttpHandlers()
     });
 }
 
+void LoginDialog::showLoginErrorDialog()
+{
+
+    // 黑色遮罩覆盖LoginDialog背景
+    auto* mask = new RoundedMask(this, 16);
+    mask->setGeometry(rect());
+    mask->show();
+    mask->raise();
+
+    // 2) 圆角弹窗,透明背景 + 圆角内容面板
+    QDialog dlg(this);
+    dlg.resize(280, 150);
+    dlg.setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
+    dlg.setAttribute(Qt::WA_TranslucentBackground, true);
+    dlg.setModal(true);
+
+    // 计算最终位置
+    const QPoint center = this->mapToGlobal(this->rect().center());
+
+    const QPoint endPos = center - QPoint(dlg.width() / 2, dlg.height() / 2);
+    // 起始位置（上移 12 像素）
+    const QPoint startPos = endPos + QPoint(0, -12);
+
+    // 先放到起始位置
+    dlg.move(startPos);
+
+    // 进场动画：从上往下
+    QTimer::singleShot(0, &dlg, [startPos, endPos, &dlg]() {
+        auto* anim = new QPropertyAnimation(&dlg, "pos", &dlg);
+        anim->setDuration(220);
+        anim->setStartValue(startPos);
+        anim->setEndValue(endPos);
+        anim->setEasingCurve(QEasingCurve::OutCubic);
+        anim->start(QAbstractAnimation::DeleteWhenStopped);
+    });
+
+    auto* panel = new QWidget(&dlg);
+    panel->setObjectName("panel");
+    panel->setStyleSheet("#panel{background:#ffffff;border-radius:12px;}");
+
+    //绘制窗口边框阴影
+    auto* shadow = new QGraphicsDropShadowEffect(panel);
+    shadow->setBlurRadius(20);
+    shadow->setColor(QColor(0,0,0,80));
+    shadow->setOffset(0,4);
+    panel->setGraphicsEffect(shadow);
+
+    auto* outer = new QVBoxLayout(&dlg);
+    outer->setContentsMargins(12, 12, 12, 12); // 给阴影留空间
+    outer->addWidget(panel);
+
+    auto* layout = new QVBoxLayout(panel);
+    layout->setContentsMargins(16, 8, 8, 16);
+    layout->setSpacing(12);
+
+    // 顶部行：右上角关闭按钮
+    auto* topRow = new QHBoxLayout;
+    auto* closeBtn = new QToolButton(panel);
+    closeBtn->setText("×");
+    closeBtn->setAutoRaise(true);
+    closeBtn->setCursor(Qt::PointingHandCursor);
+    closeBtn->setFixedSize(24, 24);
+    closeBtn->setStyleSheet(
+        "QToolButton{border:none;font-size:16px;color:#666;}"
+        "QToolButton:hover{color:#000;}"
+        );
+    connect(closeBtn, &QToolButton::clicked, &dlg, &QDialog::reject);
+    topRow->addStretch();
+    topRow->addWidget(closeBtn);
+    layout->addLayout(topRow);
+
+    auto* label = new QLabel(tr("账号或密码错误，请重新输入。"), panel);
+    label->setAlignment(Qt::AlignCenter);
+
+    auto* btn = new QPushButton(tr("重新登录"), panel);
+    connect(btn, &QPushButton::clicked, &dlg, &QDialog::accept);
+
+    layout->addWidget(label);
+    layout->addWidget(btn, 0, Qt::AlignHCenter);
+
+
+    dlg.move(startPos);
+    dlg.exec();
+
+    // 弹窗关闭后隐藏遮罩
+    mask->deleteLater();
+}
+
 bool LoginDialog::hasBadRepeatOrSequence(const QString& s) const
 {
-    // --- A) 检测重复：例如 111111 或 aaaaaa（连续相同字符 >= 6）
+    //检测重复：例如 111111 或 aaaaaa（连续相同字符 >= 6）
     int repeatCount = 1;
     for (int i = 1; i < s.size(); ++i) {
         const QChar prev = s[i - 1];
@@ -363,6 +458,7 @@ void LoginDialog::on_signIn_pushButton_clicked()
     qDebug()<<"login btn clicked";
     if(checkCount() == false || checkPwd() == false){
         qDebug()<<"Count or Pwd Error" << "\n";
+        showLoginErrorDialog();
         return;
     }
 
