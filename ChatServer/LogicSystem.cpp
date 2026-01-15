@@ -81,8 +81,9 @@ void LogicSystem::LoginHandler(std::shared_ptr<CSession> session, const short& m
 		return;
 	}
 
-	//内存中查询用户信息
+	//从已加载的用户中查询用户信息
 	auto find_iter = _users.find(uid);
+
 	std::shared_ptr<UserInfo> user_info = nullptr;
 	if (find_iter == _users.end()) {
 		//查询数据库

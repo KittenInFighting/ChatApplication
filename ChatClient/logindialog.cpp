@@ -73,6 +73,9 @@ LoginDialog::LoginDialog(QWidget *parent)
     connect(this, &LoginDialog::sig_connect_tcp, TcpMgr::GetInstance().get(), &TcpMgr::slot_tcp_connect);
     //连接tcp管理者发出的连接成功信号
     connect(TcpMgr::GetInstance().get(), &TcpMgr::sig_con_success, this, &LoginDialog::slot_tcp_con_finish);
+
+    //全部成功切换界面
+    connect(TcpMgr::GetInstance().get(), &TcpMgr::sig_swich_chatdlg, this, &LoginDialog::slot_swich_chatdlg);
 }
 
 LoginDialog::~LoginDialog()
@@ -252,6 +255,9 @@ void LoginDialog::initHttpHandlers()
         si.Token = jsonObj["token"].toString();
         if(si.Host == nullptr || si.Port==nullptr)
         {
+            qDebug() << "Port:" << si.Port << "\n";
+            qDebug() << "Host:" << si.Host << "\n";
+            qDebug() << "Host:" << si.Token << "\n";
             //收到的服务器端口和ip为空必然失败，失败提示
             qDebug()<<"Host or IP is null" << "\n";
             QMessageBox::warning(this, tr("tcp连接失败"), tr("请检查网络"));
@@ -479,7 +485,7 @@ void LoginDialog::slot_tcp_con_finish(bool bsuccess)
 {
 
     if(bsuccess){
-        QMessageBox::information(this, tr("提示"), tr("登录成功"));
+        //QMessageBox::information(this, tr("提示"), tr("登录成功"));
         QJsonObject jsonObj;
         jsonObj["uid"] = _uid;
         jsonObj["token"] = _token;
@@ -494,6 +500,11 @@ void LoginDialog::slot_tcp_con_finish(bool bsuccess)
             QMessageBox::warning(this, tr("连接失败"), tr("请检查网络"));
     }
 
+}
+
+void LoginDialog::slot_swich_chatdlg()
+{
+    QMessageBox::information(this, tr("提示"), tr("聊天服务连接成功"));
 }
 
 void LoginDialog::mouseMoveEvent(QMouseEvent *e)
