@@ -1,7 +1,8 @@
 #include "logindialog.h"
 #include "ui_logindialog.h"
 #include "httpmgr.h"
-
+#include "global.h"
+#include "tcpmgr.h"
 #include <QPainter>
 #include <QPainterPath>
 #include <QResizeEvent>
@@ -19,7 +20,7 @@ LoginDialog::LoginDialog(QWidget *parent)
     , ui(new Ui::LoginDialog)
 {
     ui->setupUi(this);
-
+    initHttpHandlers();
     //设置窗口
     setWindowFlags(Qt::FramelessWindowHint | Qt::Dialog);
     setAttribute(Qt::WA_TranslucentBackground, true);
@@ -64,9 +65,14 @@ LoginDialog::LoginDialog(QWidget *parent)
     connect(ui->count_lineEdit, &QLineEdit::textChanged, this, updateSignInState);
     connect(ui->pwd_lineEdit, &QLineEdit::textChanged, this, updateSignInState);
 
-    //连接登录回包信号
+    //连接登录回包信号，收到信号开始处理回包
     connect(HttpMgr::GetInstance().get(), &HttpMgr::sig_login_mod_finish, this,
             &LoginDialog::slot_login_mod_finish);
+
+    //连接tcp连接请求的信号和槽函数
+    connect(this, &LoginDialog::sig_connect_tcp, TcpMgr::GetInstance().get(), &TcpMgr::slot_tcp_connect);
+    //连接tcp管理者发出的连接成功信号
+    connect(TcpMgr::GetInstance().get(), &TcpMgr::sig_con_success, this, &LoginDialog::slot_tcp_con_finish);
 }
 
 LoginDialog::~LoginDialog()
@@ -229,14 +235,35 @@ void LoginDialog::initHttpHandlers()
     _handlers.insert(ReqId::ID_LOGIN_USER, [this](QJsonObject jsonObj){
         int error = jsonObj["error"].toInt();
         if(error != ErrorCodes::SUCCESS){
-           // 添加错误处理
-            showLoginErrorDialog();
+           // 添加错误处理,可考虑对齐服务端错误代码，提示具体错误，但不能提示具体账号或密码错误
+            QMessageBox::warning(this, tr("登录失败"), tr("参数错误"));
             return;
         }
         auto user = jsonObj["user"].toString();
-        //登录成功处理
-        qDebug()<< "user is " << user ;
+        //登录账号密码验证成功，进一步处理
+        //QMessageBox::information(this, tr("提示"), tr("登录成功"));
+        //qDebug()<< "user is " << user ;
+
+        //发送信号通知tcpMgr发送长链接
+        ServerInfo si;
+        si.Uid = jsonObj["uid"].toInt();
+        si.Host = jsonObj["host"].toString();
+        si.Port = jsonObj["port"].toString();
+        si.Token = jsonObj["token"].toString();
+        if(si.Host == nullptr || si.Port==nullptr)
+        {
+            //收到的服务器端口和ip为空必然失败，失败提示
+            qDebug()<<"Host or IP is null" << "\n";
+            QMessageBox::warning(this, tr("tcp连接失败"), tr("请检查网络"));
+            return;
+        }
+        _uid = si.Uid;
+        _token = si.Token;
+        qDebug()<< "user is " << user << " uid is " << si.Uid <<" host is "
+                 << si.Host << " Port is " << si.Port << " Token is " << si.Token;
+        emit sig_connect_tcp(si);
     });
+
 }
 
 void LoginDialog::showLoginErrorDialog()
@@ -421,7 +448,8 @@ void LoginDialog::slot_forget_pwd()
 void LoginDialog::slot_login_mod_finish(ReqId id, QString res, ErrorCodes err)
 {
     if(err != ErrorCodes::SUCCESS){
-        //实现一个err_label用于showTip(tr("网络请求错误"),false);
+        //实现(tr("网络请求错误"),false);
+        QMessageBox::warning(this, tr("登录失败"), tr("网络请求错误"));
         return;
     }
 
@@ -429,13 +457,15 @@ void LoginDialog::slot_login_mod_finish(ReqId id, QString res, ErrorCodes err)
     QJsonDocument jsonDoc = QJsonDocument::fromJson(res.toUtf8());
     //json解析错误
     if(jsonDoc.isNull()){
-        //实现一个err_label用于showTip(tr("json解析错误"),false);
+        //实现(tr("json解析错误"),false);
+        QMessageBox::warning(this, tr("登录失败"), tr("json解析错误"));
         return;
     }
 
     //json解析错误
     if(!jsonDoc.isObject()){
-        //实现一个err_label用于showTip(tr("json解析错误"),false);
+        //实现(tr("json解析错误"),false);
+        QMessageBox::warning(this, tr("登录失败"), tr("json解析错误"));
         return;
     }
 
@@ -443,6 +473,27 @@ void LoginDialog::slot_login_mod_finish(ReqId id, QString res, ErrorCodes err)
     //调用对应的逻辑,根据id回调。
     _handlers[id](jsonDoc.object());
     return;
+}
+
+void LoginDialog::slot_tcp_con_finish(bool bsuccess)
+{
+
+    if(bsuccess){
+        QMessageBox::information(this, tr("提示"), tr("登录成功"));
+        QJsonObject jsonObj;
+        jsonObj["uid"] = _uid;
+        jsonObj["token"] = _token;
+
+        QJsonDocument doc(jsonObj);
+        QString jsonString = doc.toJson(QJsonDocument::Indented);
+
+        //发送tcp请求给chat server
+        TcpMgr::GetInstance()->sig_send_data(ReqId::ID_CHAT_LOGIN, jsonString);
+
+    }else{
+            QMessageBox::warning(this, tr("连接失败"), tr("请检查网络"));
+    }
+
 }
 
 void LoginDialog::mouseMoveEvent(QMouseEvent *e)
@@ -469,7 +520,7 @@ void LoginDialog::on_signIn_pushButton_clicked()
 
     auto user = ui->count_lineEdit->text();
     auto pwd = ui->pwd_lineEdit->text();
-    //发送http请求登录
+    //发送http短连接向GateServer请求登录
     QJsonObject json_obj;
     json_obj["user"] = user;
     json_obj["passwd"] = QString(pwd);

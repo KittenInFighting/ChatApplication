@@ -29,6 +29,8 @@ private:
     Ui::LoginDialog *ui;
     QPixmap _avatarSrc;
     QPoint m_dragPos;
+    int _uid;//用于登录回包
+    QString _token;//用于登录回包
     bool m_dragging = false;//控制是否能拖动
     QMap<ReqId, std::function<void(const QJsonObject&)>> _handlers;
     void updateAvatar(); // 根据当前 QLabel 大小重新裁圆并显示
@@ -44,10 +46,12 @@ private:
 signals:
     void switchRegister();//用于激活注册页面
     void sigLoginClosed();//用于发送关闭信号
-    void switchReset();
+    void switchReset();//密码重置界面
+    void sig_connect_tcp(ServerInfo);//tcp连接
 public slots:
-    void slot_forget_pwd();
-    void slot_login_mod_finish(ReqId id, QString res, ErrorCodes err);
+    void slot_forget_pwd();//发送信号给mainwindow切换界面
+    void slot_login_mod_finish(ReqId id, QString res, ErrorCodes err);//处理短链接的login_mod
+    void slot_tcp_con_finish(bool bsuccess);//长连接处理
 private slots:
     void on_signIn_pushButton_clicked();
 };

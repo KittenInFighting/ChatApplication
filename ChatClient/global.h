@@ -22,6 +22,7 @@ enum ReqId{
     ID_REG_USER = 1002, //注册用户
     ID_RESET_PWD = 1003, //重置密码
     ID_LOGIN_USER = 1004, //用户登录
+    ID_CHAT_LOGIN = 1005, //连接聊天服务器
 };
 
 enum Modules{
@@ -44,5 +45,12 @@ enum ErrorCodes{
     ERR_NETWORK = 2,//网络错误
 };
 
+
+struct ServerInfo{//用于tcp通信
+    QString Host;
+    QString Port;
+    QString Token;
+    int Uid;
+};
 extern QString gate_url_prefix;
 #endif // GLOBAL_H
