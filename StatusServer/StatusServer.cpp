@@ -1,4 +1,10 @@
-﻿#include <iostream>
+﻿#include "Const.h"
+#include "ConfigMgr.h"
+#include "RedisMgr.h"
+#include "MysqlMgr.h"
+#include "AsioIOServicePool.h"
+#include "StatusServiceImpl.h"
+#include <iostream>
 #include <memory>
 #include <string>
 #include <thread>
@@ -8,12 +14,7 @@
 #include <json/reader.h>
 #include <boost/asio.hpp>
 #include <sw/redis++/redis++.h>
-#include "const.h"
-#include "ConfigMgr.h"
-#include "RedisMgr.h"
-#include "MysqlMgr.h"
-#include "AsioIOServicePool.h"
-#include "StatusServiceImpl.h"
+
 
 void RunServer() {
 	auto& cfg = ConfigMgr::Inst();
@@ -36,10 +37,11 @@ void RunServer() {
 	boost::asio::signal_set signals(io_context, SIGINT, SIGTERM);
 
 	// 设置异步等待SIGINT信号
-	signals.async_wait([&server](const boost::system::error_code& error, int signal_number) {
+	signals.async_wait([&server, &io_context](const boost::system::error_code& error, int signal_number) {
 		if (!error) {
 			std::cout << "Shutting down server..." << std::endl;
 			server->Shutdown(); // 优雅地关闭服务器
+			io_context.stop(); // 停止io_context
 		}
 		});
 
@@ -48,7 +50,7 @@ void RunServer() {
 
 	// 等待服务器关闭
 	server->Wait();
-	io_context.stop(); // 停止io_context
+	
 }
 
 int main(int argc, char** argv) {

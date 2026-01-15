@@ -11,7 +11,9 @@ enum ErrorCodes {
   PasswdErr = 1006,//密码错误
   EmailNotMatch = 1007,//邮箱不匹配
   PasswdUpFailed =1008,//密码更换失败
-  PasswdInvalid =1009//密码不符合
+  PasswdInvalid =1009,//密码不符合
+  TokenInvalid = 1010,   //Token失效
+  UidInvalid = 1011,  //uid无效
 };
 
 //RAII机制的Defer类，用于执行函数，退出作用域时自动释放函数获得的资源
