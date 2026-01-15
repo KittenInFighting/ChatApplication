@@ -1,4 +1,5 @@
 #include "tcpmgr.h"
+#include "usermgr.h"
 #include <QMessageBox>
 
 TcpMgr::TcpMgr():_host(""),_port(0),_b_recv_pending(false),_message_id(0),_message_len(0)
@@ -48,6 +49,7 @@ TcpMgr::TcpMgr():_host(""),_port(0),_b_recv_pending(false),_message_id(0),_messa
             qDebug() << "receive body msg is " << messageBody ;
 
             _buffer = _buffer.mid(_message_len);
+            handleMsg(ReqId(_message_id),_message_len, messageBody);
         }
 
     });
@@ -62,7 +64,59 @@ TcpMgr::TcpMgr():_host(""),_port(0),_b_recv_pending(false),_message_id(0),_messa
         qDebug() << "Disconnected from server.";
     });
 
+    //连接发送信号，开始发送数据
     QObject::connect(this, &TcpMgr::sig_send_data, this, &TcpMgr::slot_send_data);
+
+    initHandlers();//初始化Handlers
+}
+
+void TcpMgr::initHandlers()
+{
+    //auto self = shared_from_this();
+    _handlers.insert(ID_CHAT_LOGIN_RSP, [this](ReqId id, int len, QByteArray data){
+        Q_UNUSED(len);
+        qDebug()<< "handle id is "<< id << " data is " << data;
+        // 将QByteArray转换为QJsonDocument
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
+
+        // 检查转换是否成功
+        if(jsonDoc.isNull()){
+            qDebug() << "Failed to create QJsonDocument.";
+            return;
+        }
+
+        QJsonObject jsonObj = jsonDoc.object();
+
+        if(!jsonObj.contains("error")){
+            int err = ErrorCodes::ERR_JSON;
+            qDebug() << "Login Failed, err is Json Parse Err" << err ;
+            emit sig_login_failed(err);//登录失败
+            return;
+        }
+
+        int err = jsonObj["error"].toInt();
+        if(err != ErrorCodes::SUCCESS){
+            qDebug() << "Login Failed, err is " << err ;
+            emit sig_login_failed(err);
+            return;
+        }
+
+        UserMgr::GetInstance()->SetUid(jsonObj["uid"].toInt());
+        UserMgr::GetInstance()->SetName(jsonObj["name"].toString());
+        UserMgr::GetInstance()->SetToken(jsonObj["token"].toString());
+        emit sig_swich_chatdlg();
+    });
+}
+
+void TcpMgr::handleMsg(ReqId id, int len, QByteArray data)
+{
+    auto find_iter =  _handlers.find(id);
+    if(find_iter == _handlers.end()){
+        qDebug()<< "not found id ["<< id << "] to handle";
+        return ;
+    }
+
+    find_iter.value()(id,len,data);
 }
 
 void TcpMgr::slot_tcp_connect(ServerInfo si)
@@ -100,4 +154,8 @@ void TcpMgr::slot_send_data(ReqId reqId, QString data)
 
     // 发送数据
     _socket.write(block);
+}
+
+TcpMgr::~TcpMgr(){
+
 }
