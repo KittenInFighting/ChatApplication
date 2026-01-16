@@ -53,5 +53,21 @@ struct ServerInfo{//用于tcp通信
     QString Token;
     int Uid;
 };
+
+enum ChatUIMode{
+    SearchMode,
+    ChatMode,
+    ContactMode,
+};
+
+enum ListItemType{
+    CHAT_USER_ITEM,//聊天item
+    CONTACT_USER_ITEM,//联系人item
+    SEARCH_USER_ITEM,//搜索到的用户item
+    ADD_USER_ITEM,//提示添加用户item
+    INVALID_ITEM,//不可点击item
+    GROUP_TIP_ITEM,//分组提示item
+};
+
 extern QString gate_url_prefix;
 #endif // GLOBAL_H

@@ -13,8 +13,8 @@ void HttpMgr::PostHttpReq(QUrl url, QJsonObject json, ReqId req_id, Modules mod)
 {
     QByteArray data = QJsonDocument(json).toJson();
     QNetworkRequest request(url);
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "appliaction/json");
-    request.setHeader(QNetworkRequest::ContentTypeHeader, QByteArray::number(data.length()));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    request.setHeader(QNetworkRequest::ContentLengthHeader, data.length());
     auto self = shared_from_this();
     QNetworkReply* reply = _manager.post(request, data);
     QObject::connect(reply, &QNetworkReply::finished, [self, reply, req_id, mod](){

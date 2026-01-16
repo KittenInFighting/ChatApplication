@@ -4,5 +4,8 @@
         <file>style/style.qss</file>
         <file>res/eye_open.png</file>
         <file>res/eye_close.png</file>
+        <file>res/add_btn.png</file>
+        <file>res/search.png</file>
+        <file>res/clearbtn.png</file>
     </qresource>
 </RCC>

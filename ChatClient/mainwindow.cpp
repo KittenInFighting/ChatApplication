@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "tcpmgr.h"
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -30,7 +32,11 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
 
+    //登录确认连接tcp服务器，切换界面
+    connect(_login_dlg, &LoginDialog::switchchat, this, &MainWindow::SlotSwichChat);
 
+    //调试用
+    emit _login_dlg -> switchchat();
 }
 
 void MainWindow::adaptToPage(QWidget *page)
@@ -38,6 +44,22 @@ void MainWindow::adaptToPage(QWidget *page)
 
 }
 
+void MainWindow::SlotSwichChat()
+{
+    QMessageBox::information(this, tr("提示"), tr("聊天服务连接成功，正在切换聊天界面"));
+    if(_login_dlg){
+        _login_dlg->close(); // 触发析构
+    }
+    if (!_chat_dlg) {
+        _chat_dlg = new ChatDialog();
+        _chat_dlg->setAttribute(Qt::WA_DeleteOnClose); // 聊天界面也关闭就析构,聊天界面暂时这样考虑，后期可以修改成只是隐藏
+        connect(_chat_dlg, &QObject::destroyed, this, [this]() {
+            _chat_dlg = nullptr; // 避免悬空指针
+        });
+    }
+    _chat_dlg -> adjustSize();
+    _chat_dlg -> show();
+}
 MainWindow::~MainWindow()
 {
     delete ui;

@@ -47,12 +47,12 @@ signals:
     void switchRegister();//用于激活注册页面
     void sigLoginClosed();//用于发送关闭信号
     void switchReset();//密码重置界面
+    void switchchat();//切换聊天界面
     void sig_connect_tcp(ServerInfo);//tcp连接
 public slots:
     void slot_forget_pwd();//发送信号给mainwindow切换界面
     void slot_login_mod_finish(ReqId id, QString res, ErrorCodes err);//处理短链接的login_mod
     void slot_tcp_con_finish(bool bsuccess);//长连接成功开始处理
-    void slot_swich_chatdlg();//登录成功切换界面
 private slots:
     void on_signIn_pushButton_clicked();
 };

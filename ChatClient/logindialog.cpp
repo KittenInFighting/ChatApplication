@@ -69,13 +69,13 @@ LoginDialog::LoginDialog(QWidget *parent)
     connect(HttpMgr::GetInstance().get(), &HttpMgr::sig_login_mod_finish, this,
             &LoginDialog::slot_login_mod_finish);
 
-    //连接tcp连接请求的信号和槽函数
+    //连接发送tcp连接请求的信号和槽函数
     connect(this, &LoginDialog::sig_connect_tcp, TcpMgr::GetInstance().get(), &TcpMgr::slot_tcp_connect);
+
     //连接tcp管理者发出的连接成功信号
     connect(TcpMgr::GetInstance().get(), &TcpMgr::sig_con_success, this, &LoginDialog::slot_tcp_con_finish);
 
-    //全部成功切换界面
-    connect(TcpMgr::GetInstance().get(), &TcpMgr::sig_swich_chatdlg, this, &LoginDialog::slot_swich_chatdlg);
+
 }
 
 LoginDialog::~LoginDialog()
@@ -483,9 +483,9 @@ void LoginDialog::slot_login_mod_finish(ReqId id, QString res, ErrorCodes err)
 
 void LoginDialog::slot_tcp_con_finish(bool bsuccess)
 {
-
     if(bsuccess){
-        //QMessageBox::information(this, tr("提示"), tr("登录成功"));
+        QMessageBox::information(this, tr("提示"), tr("登录成功"));
+        emit switchchat();//切换进聊天窗口信号
         QJsonObject jsonObj;
         jsonObj["uid"] = _uid;
         jsonObj["token"] = _token;
@@ -493,7 +493,7 @@ void LoginDialog::slot_tcp_con_finish(bool bsuccess)
         QJsonDocument doc(jsonObj);
         QString jsonString = doc.toJson(QJsonDocument::Indented);
 
-        //发送tcp请求给chat server
+        //发送数据给chat server
         TcpMgr::GetInstance()->sig_send_data(ReqId::ID_CHAT_LOGIN, jsonString);
 
     }else{
@@ -502,10 +502,7 @@ void LoginDialog::slot_tcp_con_finish(bool bsuccess)
 
 }
 
-void LoginDialog::slot_swich_chatdlg()
-{
-    QMessageBox::information(this, tr("提示"), tr("聊天服务连接成功"));
-}
+
 
 void LoginDialog::mouseMoveEvent(QMouseEvent *e)
 {

@@ -29,7 +29,6 @@ public slots:
 signals:
     void sig_con_success(bool bsuccess);//连接成功信号
     void sig_send_data(ReqId reqId, QString data);//发送数据信号
-    void sig_swich_chatdlg();//切换进聊天窗口信号
     void sig_login_failed(int);//登录失败信号
 };
 
