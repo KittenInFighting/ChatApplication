@@ -10,45 +10,54 @@ CONFIG += c++17
 
 SOURCES += \
     addbtn.cpp \
+    bubbleframe.cpp \
     chatdialog.cpp \
+    chatitembase.cpp \
     chatpage.cpp \
     chatuserlist.cpp \
     chatuserwid.cpp \
+    chatview.cpp \
     global.cpp \
     httpmgr.cpp \
     listitembase.cpp \
-    lodingdlg.cpp \
     logindialog.cpp \
     main.cpp \
     mainwindow.cpp \
+    messagetextedit.cpp \
+    picturebubble.cpp \
     registerdialog.cpp \
     resetdialog.cpp \
     searchedit.cpp \
     shortscrollbar.cpp \
     tcpmgr.cpp \
+    textbubble.cpp \
     timerbtn.cpp \
     usermgr.cpp
 
 HEADERS += \
-    InputTextEdit.h \
     addbtn.h \
+    bubbleframe.h \
     chatdialog.h \
+    chatitembase.h \
     chatpage.h \
     chatuserlist.h \
     chatuserwid.h \
+    chatview.h \
     clickablelabel.h \
     global.h \
     httpmgr.h \
     listitembase.h \
-    lodingdlg.h \
     logindialog.h \
     mainwindow.h \
+    messagetextedit.h \
+    picturebubble.h \
     registerdialog.h \
     resetdialog.h \
     searchedit.h \
     shortscrollbar.h \
     singleton.h \
     tcpmgr.h \
+    textbubble.h \
     timerbtn.h \
     usermgr.h
 
@@ -56,7 +65,6 @@ FORMS += \
     chatdialog.ui \
     chatpage.ui \
     chatuserwid.ui \
-    lodingdlg.ui \
     logindialog.ui \
     mainwindow.ui \
     registerdialog.ui \

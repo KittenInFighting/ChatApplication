@@ -21,14 +21,14 @@ protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
 
 private slots:
-    void onSendClicked();//发送按钮被点击
+    //void onSendClicked();//发送按钮被点击
     void addChatUserList();//用于测试
     //void slot_loading_chat_user();
 private:
     void ShowList(bool bsearch);
-    void repositionSendBtn();//重新定位发送按钮
+    //void repositionSendBtn();//重新定位发送按钮
     Ui::ChatDialog *ui;
-    QPushButton *sendBtn = nullptr;
+   // QPushButton *sendBtn = nullptr;
 
     ChatUIMode _mode;
     ChatUIMode _state;

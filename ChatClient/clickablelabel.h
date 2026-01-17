@@ -8,7 +8,7 @@ class ClickableLabel : public QLabel {
     Q_OBJECT
 public:
     explicit ClickableLabel(QWidget *parent = nullptr) : QLabel(parent) {}
-
+    using QLabel::QLabel;
 signals:
     void clicked();
 

@@ -35,9 +35,6 @@ void ChatUserWid::updateMsgElide()
     // 当前 label 的“可用宽度”
     int maxW = ui->user_chat_lab->contentsRect().width();
 
-    // 第一次布局还没完成时，可能是 0，这里兜底用最大宽 100
-    //if (maxW <= 0) maxW = 100;
-
     QFontMetrics fm(ui->user_chat_lab->font());
     ui->user_chat_lab->setText(fm.elidedText(_msg, Qt::ElideRight, maxW));
 }
@@ -65,6 +62,12 @@ ChatUserWid::ChatUserWid(QWidget *parent) :
     ui(new Ui::ChatUserWid)
 {
     ui->setupUi(this);
+    setObjectName("chat_user_item");
+    setAttribute(Qt::WA_StyledBackground, true);
+
+    setAttribute(Qt::WA_StyledBackground, true);  // 允许 QSS 画背景
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     SetItemType(ListItemType::CHAT_USER_ITEM);
     setStyleSheet(R"(
@@ -84,6 +87,7 @@ ChatUserWid::ChatUserWid(QWidget *parent) :
         color:#B3B3B3;
         }
        )");
+
 }
 
 ChatUserWid::~ChatUserWid()

@@ -1,5 +1,4 @@
 #include "chatdialog.h"
-#include "InputTextEdit.h"
 #include "ui_chatdialog.h"
 #include "addbtn.h"
 #include "chatuserwid.h"
@@ -53,8 +52,6 @@ ChatDialog::ChatDialog(QWidget *parent)
         QLineEdit::LeadingPosition
         );
     ui->search_edit->setPlaceholderText(QStringLiteral("搜索"));
-    // 点击空白处，让 search_edit 失焦
-    ui->chat_data_wid->installEventFilter(this);
 
     //启用背景绘制
     auto enableBg = [](QWidget* w){
@@ -65,12 +62,8 @@ ChatDialog::ChatDialog(QWidget *parent)
     enableBg(ui->side_bar);//左侧栏
     enableBg(ui->chat_user_wid); //左侧用户列表区域 + 搜索区
     enableBg(ui->search_wid);
-    enableBg(ui->chat_data_wid);//右侧聊天区域
-    enableBg(ui->mode_wid);
+
     ui->chat_user_wid->setAttribute(Qt::WA_StyledBackground, true);
-    ui->title_wid->setAttribute(Qt::WA_StyledBackground, true);
-    ui->title_wid->setAttribute(Qt::WA_StyleSheetTarget, true);
-    ui->mode_wid->setAttribute(Qt::WA_StyledBackground, true);
     ui->list_wid->setAttribute(Qt::WA_StyledBackground, true);
 
     //在list_wid和search_wid插入分割线
@@ -102,19 +95,13 @@ ChatDialog::ChatDialog(QWidget *parent)
         return;
     }
 
-    // 把分割线插入
-    int idx2 = mainLay->indexOf(ui->chat_data_wid);
-    if (idx2 >= 0) {
-        mainLay->insertWidget(idx2, vline);
-    }
-
     //防止被 spacing/margin 挤掉
     mainLay->setSpacing(0);
     mainLay->setContentsMargins(0, 0, 0, 0);
 
     //右侧清空“×”action默认隐藏
     QAction* clearAct = ui->search_edit->addAction(
-        QIcon(":/res/clearbtn.png"),   // 你可以换成系统自带或你自己的×图标
+        QIcon(":/res/clearbtn.png"),
         QLineEdit::TrailingPosition
         );
     clearAct->setVisible(false);
@@ -129,7 +116,7 @@ ChatDialog::ChatDialog(QWidget *parent)
         ui->search_edit->setFocus();
     });
 
-    // 5) 把右侧 action 对应的按钮设置成“不抢焦点/尺寸合适”
+    // 5) 把右侧 action 对应的按钮设置成不抢焦点
     QObjectList objs = ui->search_edit->children();
     for (int i = 0; i < objs.size(); ++i) {
         QToolButton* b = qobject_cast<QToolButton*>(objs.at(i));
@@ -143,43 +130,6 @@ ChatDialog::ChatDialog(QWidget *parent)
             break;
         }
     }
-    //取出输入框TextEdit 指针
-    auto te = ui->textEdit;
-    //创建发送按钮，并“叠加”到 textEdit 内部
-    sendBtn = new QPushButton(QStringLiteral("发送"), te);
-    sendBtn->setStyleSheet(R"(
-    QPushButton{
-        background:#1E88FF;          /* 蓝色背景 */
-        border:none;
-        border-radius:10px;
-        color:#FFFFFF;               /* 有内容：白字 */
-        font-size:14px;
-        padding:0px 12px;
-    }
-    QPushButton:disabled{
-        color:rgba(255,255,255,0.55); /* 无内容：字体变浅（图2效果） */
-    }
-    )");
-    //固定大小
-    sendBtn->setFixedSize(100, 33);
-    //显示在最上层
-    sendBtn->raise();
-    // 右下角留空隙
-    const int padding = 10;
-    te->setOverlayMargins(sendBtn->width() + padding, sendBtn->height() + padding);
-    //初次定位按钮
-    repositionSendBtn();
-    //textEdit 变化大小时，重新定位按钮
-    connect(te, &InputTextEdit::resized, this, &ChatDialog::repositionSendBtn);
-    auto updateSendBtnState = [=]() {
-        const bool hasContent = !te->toPlainText().trimmed().isEmpty();
-        sendBtn->setEnabled(hasContent);
-    };
-    updateSendBtnState();
-    // 输入变化时实时更新
-    connect(te, &QTextEdit::textChanged, this, updateSendBtnState);
-    //点击发送
-    connect(sendBtn, &QPushButton::clicked, this, &ChatDialog::onSendClicked);
 
     //设置add_btn
     ui->add_btn->setPlusIcon(":/res/add_btn.png");
@@ -200,6 +150,9 @@ ChatDialog::ChatDialog(QWidget *parent)
     QPushButton#add_btn:hover   { background: #E2E2E2; }
     QPushButton#add_btn:pressed { background: #CECECE; }
     )");
+
+    ui->widget_2->setFocus(Qt::OtherFocusReason);//默认聚焦空白边框
+
     ShowList(false);
 
     addChatUserList();
@@ -221,6 +174,7 @@ ChatDialog::ChatDialog(QWidget *parent)
                 }
             });
 
+    this->installEventFilter(this);
 }
 
 ChatDialog::~ChatDialog()
@@ -228,45 +182,23 @@ ChatDialog::~ChatDialog()
     delete ui;
 }
 
-bool ChatDialog::eventFilter(QObject *watched, QEvent *event)
+bool ChatDialog::eventFilter(QObject *obj, QEvent *event)
 {
-    if (watched == ui->textEdit && event->type() == QEvent::Resize) {
-        repositionSendBtn();
-    }
-    if (watched == ui->chat_data_wid && event->type() == QEvent::MouseButtonPress) {
-        ui->search_edit->clearFocus();
+    if (event->type() == QEvent::MouseButtonPress)
+    {
+        // 当前焦点在 search_edit 上才处理
+        if (ui->search_edit->hasFocus())
+        {
+            // 如果点击的不是 search_edit
+            QWidget *w = QApplication::widgetAt(QCursor::pos());
+            if (w && (w == ui->search_edit || ui->search_edit->isAncestorOf(w)))
+                return QDialog::eventFilter(obj, event);
+
+            ui->search_edit->clearFocus();
+        }
     }
     // 继续交给父类处理
-    return QDialog::eventFilter(watched, event);
-}
-
-void ChatDialog::repositionSendBtn()
-{
-    if (!sendBtn) return;
-
-    const int padding = 22; // 想更贴边就 0~4
-
-    auto te = ui->textEdit;
-
-    // contentsRect去掉边框(frame)后的内部区域
-    const QRect r = te->contentsRect();
-
-    const int x = r.right()  - sendBtn->width()  - padding + 1;
-    const int y = r.bottom() - sendBtn->height() - padding + 10;
-
-    sendBtn->move(x, y);
-}
-
-void ChatDialog::onSendClicked()
-{
-    const QString text = ui->textEdit->toPlainText().trimmed();
-    if (text.isEmpty()){
-        return;
-    }
-
-    //发送逻辑
-
-    ui->textEdit->clear();
+    return QDialog::eventFilter(obj, event);
 }
 
 void ChatDialog::addChatUserList()
@@ -284,6 +216,7 @@ void ChatDialog::addChatUserList()
         ui->chat_user_list->refreshScrollRange();
     }
 }
+
 
 void ChatDialog::ShowList(bool bsearch)
 {

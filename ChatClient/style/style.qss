@@ -143,10 +143,6 @@ QDialog#ChatDialog{
     background:#FFFFFF;
 }
 
-/* ===== 右侧聊天区域：chat_data_wid ===== */
-#chat_data_wid{
-    background:#FFFFFF;
-}
 /* ===== 名字区域：title_wid ===== */
 #title_wid{
     background:#FFFFFF;

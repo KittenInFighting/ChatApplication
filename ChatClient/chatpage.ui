@@ -120,7 +120,7 @@
              <number>0</number>
             </property>
             <item>
-             <widget class="QLabel" name="label">
+             <widget class="QLabel" name="title_lab">
               <property name="text">
                <string>名字名字</string>
               </property>
@@ -133,7 +133,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QWidget" name="text_wid" native="true">
+       <widget class="ChatView" name="text_wid" native="true">
         <property name="minimumSize">
          <size>
           <width>560</width>
@@ -203,40 +203,40 @@
              <number>0</number>
             </property>
             <item>
-             <widget class="QLabel" name="side_message_lab_2">
+             <widget class="QPushButton" name="emoji_btn">
               <property name="minimumSize">
                <size>
-                <width>35</width>
-                <height>35</height>
+                <width>33</width>
+                <height>33</height>
                </size>
               </property>
               <property name="maximumSize">
                <size>
-                <width>35</width>
-                <height>35</height>
+                <width>33</width>
+                <height>33</height>
                </size>
               </property>
               <property name="text">
-               <string>表情</string>
+               <string/>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="side_message_lab_3">
+             <widget class="QPushButton" name="file_btn">
               <property name="minimumSize">
                <size>
-                <width>35</width>
-                <height>35</height>
+                <width>33</width>
+                <height>33</height>
                </size>
               </property>
               <property name="maximumSize">
                <size>
-                <width>35</width>
-                <height>35</height>
+                <width>33</width>
+                <height>33</height>
                </size>
               </property>
               <property name="text">
-               <string>文件</string>
+               <string/>
               </property>
              </widget>
             </item>
@@ -264,13 +264,13 @@
         <property name="minimumSize">
          <size>
           <width>570</width>
-          <height>160</height>
+          <height>165</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
           <width>16777215</width>
-          <height>200</height>
+          <height>165</height>
          </size>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_5">
@@ -278,7 +278,7 @@
           <number>0</number>
          </property>
          <property name="leftMargin">
-          <number>0</number>
+          <number>15</number>
          </property>
          <property name="topMargin">
           <number>0</number>
@@ -290,11 +290,17 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="InputTextEdit" name="textEdit">
+          <widget class="MessageTextEdit" name="textEdit">
            <property name="minimumSize">
             <size>
              <width>570</width>
-             <height>185</height>
+             <height>165</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>165</height>
             </size>
            </property>
           </widget>
@@ -309,9 +315,15 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>InputTextEdit</class>
+   <class>ChatView</class>
+   <extends>QWidget</extends>
+   <header location="global">chatview.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MessageTextEdit</class>
    <extends>QTextEdit</extends>
-   <header>InputTextEdit.h</header>
+   <header location="global">messagetextedit.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

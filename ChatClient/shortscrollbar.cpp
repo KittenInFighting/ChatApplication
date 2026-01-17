@@ -20,7 +20,7 @@ QSize ShortScrollBar::sizeHint() const
 
 QRect ShortScrollBar::grooveRect() const
 {
-    // 让它像 QQ 一样贴右边，并留出一点上下 margin
+    // 贴右边，并留出一点上下margin
     if (orientation() == Qt::Vertical) {
         const int topBottom = 8;
         return QRect(width() - m_w, topBottom, m_w, height() - 2*topBottom);
@@ -69,12 +69,11 @@ void ShortScrollBar::paintEvent(QPaintEvent *)
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing, true);
 
-    // 轨道（很淡，可选）
-    // 如果你想完全透明，可以注释掉这段
+    // 轨道
     QRect g = grooveRect();
     p.setPen(Qt::NoPen);
-    p.setBrush(QColor(0,0,0,0)); // 轨道透明（QQ 基本看不到）
-    // p.setBrush(QColor(0,0,0,15)); // 想要淡淡轨道就用 15
+    p.setBrush(QColor(0,0,0,0)); // 轨道透明
+    // p.setBrush(QColor(0,0,0,15));
     p.drawRoundedRect(g, m_r, m_r);
 
     // 没有可滚动范围，就不画滑块
@@ -121,7 +120,7 @@ void ShortScrollBar::mousePressEvent(QMouseEvent *e)
         return;
     }
 
-    // 点击轨道：把滑块中心跳过去（更像 QQ）
+    // 点击轨道：把滑块中心跳过去
     m_dragging = true;
     m_dragOffset = m_len / 2;
     setValue(valueFromPos(e->pos().y()));
@@ -132,7 +131,7 @@ void ShortScrollBar::mousePressEvent(QMouseEvent *e)
 void ShortScrollBar::mouseMoveEvent(QMouseEvent *e)
 {
     if (!m_dragging) {
-        // hover 命中 handle 时更像 QQ（可选）
+        // hover 命中
         m_hovering = handleRect().contains(e->pos());
         update();
         QScrollBar::mouseMoveEvent(e);

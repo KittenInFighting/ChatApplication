@@ -8,5 +8,7 @@
         <file>res/search.png</file>
         <file>res/clearbtn.png</file>
         <file>style/chat_user_list.qss</file>
+        <file>res/emoji.png</file>
+        <file>res/file.png</file>
     </qresource>
 </RCC>

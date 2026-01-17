@@ -14,13 +14,19 @@ public:
     ChatUserList(QWidget *parent = nullptr);
     void addChatUserWidget(QWidget *w);   //ChatUserWid 进来
     void refreshScrollRange();
+    void updateHoverItemAt(const QPoint& viewportPos);
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
     void smoothScrollTo(int target);
+    void scrollContentsBy(int dx, int dy) override;
+
 private:
-    void syncHoverUnderCursor();
+    void updateHoverItem();
     QPropertyAnimation *m_scrollAnim = nullptr;
+    QListWidgetItem* m_hoverItem = nullptr;
     int m_targetValue = 0;
+    QPoint m_lastVpPos;
+    bool m_hasLastVpPos = false;
 signals:
     void sig_loading_chat_user();
 };

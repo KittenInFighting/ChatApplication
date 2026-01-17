@@ -8,7 +8,7 @@
 #include <QApplication>
 #include <QCursor>
 #include <QMouseEvent>
-
+#include <QTimer>
 ChatUserList::ChatUserList(QWidget *parent)
     : QListWidget(parent)
 {
@@ -24,12 +24,21 @@ ChatUserList::ChatUserList(QWidget *parent)
     qDebug() << "qss open" << f.open(QFile::ReadOnly) << f.errorString();
     const QString qss = QString::fromUtf8(f.readAll());
     sb->setStyleSheet(qss);
+    setObjectName("chat_user_list");
 
+    setStyleSheet(R"(
+    QListWidget { outline: 0px; }
+    QListWidget::item:selected { background: transparent; border: none; }
+    QListWidget::item { border: none; }
+
+    QWidget#chat_user_item { background: transparent; border-radius: 6px; }
+    QWidget#chat_user_item[hover="true"] { background: rgba(0,0,0,10); }
+    QWidget#chat_user_item[selected="true"] { background: rgba(0,0,0,18); }
+    )");
     // 像素滚动
     setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
     setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
 
-    viewport()->installEventFilter(this);
 
     m_scrollAnim = new QPropertyAnimation(verticalScrollBar(), "value", this);
     m_scrollAnim->setDuration(120);
@@ -40,10 +49,26 @@ ChatUserList::ChatUserList(QWidget *parent)
     setMouseTracking(true);
     viewport()->setMouseTracking(true);
 
-    connect(verticalScrollBar(), &QScrollBar::valueChanged, this, [this]{
-        syncHoverUnderCursor();   // 每一帧滚动都刷新 hover
+    connect(verticalScrollBar(), &QScrollBar::valueChanged, this, [this](int v){
+        m_targetValue = v;
+        QTimer::singleShot(0, this, [this]{ updateHoverItem(); });
     });
+    connect(this, &QListWidget::currentItemChanged, this,
+            [this](QListWidgetItem* cur, QListWidgetItem* prev){
+                auto setSel = [this](QListWidgetItem* it, bool sel){
+                    if (!it) return;
+                    if (auto *w = itemWidget(it)) {
+                        w->setProperty("selected", sel);
+                        w->style()->unpolish(w);
+                        w->style()->polish(w);
+                        w->update();
+                    }
+                };
+                setSel(prev, false);
+                setSel(cur, true);
+            });
 
+    viewport()->installEventFilter(this);
 }
 
 void ChatUserList::smoothScrollTo(int target)
@@ -53,7 +78,7 @@ void ChatUserList::smoothScrollTo(int target)
 
     m_targetValue = target;
 
-    // 如果动画正在跑，先以“当前值”为起点继续滚
+    // 以“当前值”为起点继续滚
     if (m_scrollAnim->state() == QAbstractAnimation::Running) {
         m_scrollAnim->stop();
     }
@@ -61,6 +86,14 @@ void ChatUserList::smoothScrollTo(int target)
     m_scrollAnim->setStartValue(sb->value());
     m_scrollAnim->setEndValue(m_targetValue);
     m_scrollAnim->start();
+}
+
+void ChatUserList::scrollContentsBy(int dx, int dy)
+{
+    QListWidget::scrollContentsBy(dx, dy);
+    if (m_hasLastVpPos) {
+        QTimer::singleShot(0, this, [this]{ updateHoverItem(); });
+    }
 }
 
 bool ChatUserList::eventFilter(QObject *watched, QEvent *event)
@@ -75,48 +108,60 @@ bool ChatUserList::eventFilter(QObject *watched, QEvent *event)
         }
     }
 
-        if (watched == this->viewport()&& event->type() == QEvent::Wheel) {
-            auto *wheelEvent = static_cast<QWheelEvent*>(event);
-            QScrollBar *sb = verticalScrollBar();
-            int deltaPx = 0;
+    if (watched == this->viewport() && event->type() == QEvent::Wheel) {
 
-            if (!wheelEvent->pixelDelta().isNull()) {
-                // 触控板
-                deltaPx = wheelEvent->pixelDelta().y();
-            } else {
-                // 鼠标滚轮：按 item 高度比例滚动
-                int itemH = 60;
+         auto *wheelEvent = static_cast<QWheelEvent*>(event);
+        QScrollBar *sb = verticalScrollBar();
 
-                // 每格滚轮滚动 itemH 的 1.5
-                const int stepPx = itemH * 1.55;
-                deltaPx = (wheelEvent->angleDelta().y() / 120) * stepPx;
-            }
+        m_lastVpPos = wheelEvent->position().toPoint();
+        m_hasLastVpPos = true;
+        updateHoverItemAt(m_lastVpPos);
 
-            int target = m_targetValue - deltaPx;
-            smoothScrollTo(target);
+        int deltaPx = 0;
+        if (!wheelEvent->pixelDelta().isNull()) {
+            // 触控板
+            deltaPx = -wheelEvent->pixelDelta().y();
+        } else {
+               // 鼠标滚轮：按 item 高度比例滚动
+             int itemH = 60;
 
-            // 到底加载更多
-            if (m_targetValue >= sb->maximum()) {
-                //加载更多用户处理
-                emit sig_loading_chat_user();
-            }
-            return true;
+            // 每格滚轮滚动 itemH 的 1.5
+            const int stepPx = itemH * 1.55;
+             deltaPx = -(wheelEvent->angleDelta().y() / 120) * stepPx;
+         }
+
+         int target = sb->value() + deltaPx;
+        smoothScrollTo(target);
+        updateHoverItemAt(m_lastVpPos);
+         // 到底加载更多
+        if (m_targetValue >= sb->maximum()) {
+            //加载更多用户处理
+             emit sig_loading_chat_user();
         }
-    //}
+
+        return true;
+    }
+    if (watched == viewport() && event->type() == QEvent::MouseMove) {
+        auto *me = static_cast<QMouseEvent*>(event);
+        m_lastVpPos = me->position().toPoint();
+        m_hasLastVpPos = true;
+        updateHoverItemAt(m_lastVpPos);
+    }
+
     return QListWidget::eventFilter(watched, event);
 }
 void ChatUserList::addChatUserWidget(QWidget *w)
 {
     //  计算widget的布局
-    w->setParent(this);
-    w->adjustSize();
+    w->setParent(nullptr);
     w->updateGeometry();
+    w->setAttribute(Qt::WA_TransparentForMouseEvents, true);
 
     auto *item = new QListWidgetItem(this);
 
     // 强制用 widget 的 sizeHint 当 item 高度
     const int h = w->sizeHint().height();
-    item->setSizeHint(QSize(0, h));
+    item->setSizeHint(QSize(this->viewport()->width(), h));
 
     addItem(item);
     setItemWidget(item, w);
@@ -131,23 +176,41 @@ void ChatUserList::refreshScrollRange()
     doItemsLayout();
     updateGeometries();
     viewport()->update();
-
-    auto *sb = verticalScrollBar();
-    qDebug() << "range" << sb->minimum() << sb->maximum()
-             << "pageStep" << sb->pageStep()
-             << "count" << count()
-             << "viewportH" << viewport()->height();
 }
 
-void ChatUserList::syncHoverUnderCursor()
-{
-    QPoint vpPos = viewport()->mapFromGlobal(QCursor::pos());
-    if (!viewport()->rect().contains(vpPos)) return;
 
-    QMouseEvent fakeMove(QEvent::MouseMove,
-                         vpPos,
-                         Qt::NoButton,
-                         Qt::NoButton,
-                         Qt::NoModifier);
-    QApplication::sendEvent(viewport(), &fakeMove);
+
+void ChatUserList::updateHoverItem()
+{
+    const QPoint vpPos = viewport()->mapFromGlobal(QCursor::pos());
+    updateHoverItemAt(vpPos);
+}
+
+void ChatUserList::updateHoverItemAt(const QPoint& viewportPos)
+{
+    // viewportPos 是 viewport 坐标
+    if (!viewport()->rect().contains(viewportPos)) return;
+
+    QListWidgetItem *it = itemAt(viewportPos);
+    if (it == m_hoverItem) return;
+
+    // 清旧
+    if (m_hoverItem) {
+        if (auto *w = itemWidget(m_hoverItem)) {
+            w->setProperty("hover", false);
+            w->style()->unpolish(w); w->style()->polish(w);
+            w->update();
+        }
+    }
+
+    m_hoverItem = it;
+
+    // 设新
+    if (m_hoverItem) {
+        if (auto *w = itemWidget(m_hoverItem)) {
+            w->setProperty("hover", true);
+            w->style()->unpolish(w); w->style()->polish(w);
+            w->update();
+        }
+    }
 }

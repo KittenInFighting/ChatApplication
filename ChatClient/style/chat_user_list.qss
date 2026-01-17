@@ -7,3 +7,4 @@ ShortScrollBar {
     qproperty-handleHoverColor: rgba(0, 0, 0, 110);
     qproperty-handlePressedColor: rgba(0, 0, 0, 140);
 }
+

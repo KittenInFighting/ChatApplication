@@ -11,7 +11,7 @@ AddBtn::AddBtn(QWidget *parent)
     // 不显示文字，只显示图标
     setText("");
 
-    // 鼠标手型、不要焦点框（更像 UI 按钮）
+    // 鼠标手型、不要焦点框
     setCursor(Qt::PointingHandCursor);
     setFocusPolicy(Qt::NoFocus);
 
