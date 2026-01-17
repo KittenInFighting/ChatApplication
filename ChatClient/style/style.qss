@@ -126,7 +126,7 @@ QDialog#ChatDialog{
 }
 /* ===== 左侧栏：side_bar ===== */
 #side_bar{
-    background:#F6F7F9;
+    background:#FFFFFF;
     border-right:1px solid #E6E8EB;
 }
 
@@ -138,6 +138,8 @@ QDialog#ChatDialog{
 
 /* ===== 搜索区域：search_wid ===== */
 #search_wid{
+    background: transparent;
+    border-right: 1px solid #E9EAEC;
     background:#FFFFFF;
 }
 
@@ -163,7 +165,7 @@ QDialog#ChatDialog{
 }
 
 QLineEdit#search_edit{
-    background: #F3F4F6;
+    background: #EBEBEB;
     border: 1px solid transparent; /* 默认不显示边框 */
     border-radius: 10px;
     padding-right: 28px;           /* 右侧给“×”留位置 */
@@ -177,19 +179,25 @@ QLineEdit#search_edit::placeholder{
 
 QLineEdit#search_edit:focus{
     border: 1px solid #1677FF;
-    background: #F3F4F6;          /* 聚焦时略偏灰 */
+    background: #EBEBEB;          /* 聚焦时略偏灰 */
 }
 
 /* 让 lineedit 内部 action 变成无边框透明按钮 */
 QLineEdit#search_edit QToolButton{
     border: none;
-    background: transparent;
+    background: background:#EBEBEB;
     padding: 0px;
 }
 QLineEdit#search_edit QToolButton:hover{
-    background: #D1D5DB;          /* hover 时灰圆底 */
+    background: #EBEBEB;          /* hover 时灰圆底 */
     border-radius: 10px;
 }
+
+
+QPushButton#add_btn:hover   { background: #E2E2E2; }
+QPushButton#add_btn:pressed { background: #CECECE; }
+
+
 #chat_user_list, #contact_user_list, #search_user_list{
     border:none;
     background:#FFFFFF;
@@ -197,7 +205,6 @@ QLineEdit#search_edit QToolButton:hover{
 }
 
 #list_wid{
-    background:#FFFFFF;
-    border-top: 1px solid #E6E8EB;
-    border-right:none;
+    background: transparent;
+    border-right: 1px solid #E9EAEC;
 }

@@ -7,30 +7,43 @@
 #include <QToolButton>
 #include <QRandomGenerator>
 
-std::vector<QString>  strs ={"hello !",
-                             "nice to meet u",
-                             "Ohiyo",
-                             "Dear",
-                             "My Honey"};
+std::vector<QString>  strs ={"hello !00000000000000",
+                             "nice to meet u0000000000000",
+                             "Ohiyo0000000000000000",
+                             "Dear00000000000000",
+                             "My Honey00000000000000"};
 
 std::vector<QString> heads = {
     ":/res/1.jpg",
 };
 
 std::vector<QString> names = {
-    "Mihari",
-    "Mahiro",
-    "Asahi",
-    "Momiji",
-    "Kade",
+    "Mihariooooooooo",
+    "Mahiro0000000000",
+    "Asahi00000000000",
+    "Momiji000000000",
+    "Kade00000000000",
 };
 
+std::vector<QString> times = {
+    "2025/06/08",
+    "9:30",
+    "8:00",
+    "7:30",
+    "13:00",
+};
 ChatDialog::ChatDialog(QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::ChatDialog),_mode(ChatUIMode::ChatMode),
     _state(ChatUIMode::ChatMode),_b_loading(false)
 {
     ui->setupUi(this);
+    //设置窗口边框
+    setWindowFlags(Qt::Window
+                   | Qt::WindowMinimizeButtonHint
+                   | Qt::WindowMaximizeButtonHint
+                   | Qt::WindowCloseButtonHint);
+    show();
 
     ui->search_edit->SetMaxLength(30);
     QPixmap pm(":/res/search.png");
@@ -171,9 +184,43 @@ ChatDialog::ChatDialog(QWidget *parent)
     //设置add_btn
     ui->add_btn->setPlusIcon(":/res/add_btn.png");
 
+    ui->add_btn->setStyleSheet(R"(
+    QPushButton#add_btn {
+    background: #EBEBEB;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    width: 26px;
+    height: 26px;
+    min-width: 26px;
+    max-width: 26px;
+    min-height: 26px;
+    max-height: 26px;
+    padding: 0px;
+    }
+    QPushButton#add_btn:hover   { background: #E2E2E2; }
+    QPushButton#add_btn:pressed { background: #CECECE; }
+    )");
     ShowList(false);
 
     addChatUserList();
+    connect(ui->chat_user_list, &QListWidget::currentItemChanged, this,
+            [=](QListWidgetItem* cur, QListWidgetItem* prev){
+                if (prev) {
+                    if (auto* w = qobject_cast<ChatUserWid*>(ui->chat_user_list->itemWidget(prev))) {
+                        w->setProperty("selected", false);
+                        w->style()->unpolish(w);
+                        w->style()->polish(w);
+                    }
+                }
+                if (cur) {
+                    if (auto* w = qobject_cast<ChatUserWid*>(ui->chat_user_list->itemWidget(cur))) {
+                        w->setProperty("selected", true);
+                        w->style()->unpolish(w);
+                        w->style()->polish(w);
+                    }
+                }
+            });
+
 }
 
 ChatDialog::~ChatDialog()
@@ -225,19 +272,16 @@ void ChatDialog::onSendClicked()
 void ChatDialog::addChatUserList()
 {
     // 创建QListWidgetItem，并设置自定义的widget
-    for(int i = 0; i < 13; i++){
+    for(int i = 0; i < 30; i++){
         int randomValue = QRandomGenerator::global()->bounded(100); // 生成0到99之间的随机整数
         int str_i = randomValue%strs.size();
         int head_i = randomValue%heads.size();
         int name_i = randomValue%names.size();
-
+        int time_i = randomValue%times.size();
         auto *chat_user_wid = new ChatUserWid();
-        chat_user_wid->SetInfo(names[name_i], heads[head_i], strs[str_i]);
-        QListWidgetItem *item = new QListWidgetItem;//创建qt默认item
-        //qDebug()<<"chat_user_wid sizeHint is " << chat_user_wid->sizeHint();
-        item->setSizeHint(chat_user_wid->sizeHint());
-        ui->chat_user_list->addItem(item);//添加默认item
-        ui->chat_user_list->setItemWidget(item, chat_user_wid);//把item替换成自设
+        chat_user_wid->SetInfo(names[name_i], heads[head_i], strs[str_i], times[time_i]);
+        ui->chat_user_list->addChatUserWidget(chat_user_wid);
+        ui->chat_user_list->refreshScrollRange();
     }
 }
 

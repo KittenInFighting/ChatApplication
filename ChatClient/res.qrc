@@ -7,5 +7,6 @@
         <file>res/add_btn.png</file>
         <file>res/search.png</file>
         <file>res/clearbtn.png</file>
+        <file>style/chat_user_list.qss</file>
     </qresource>
 </RCC>

@@ -23,6 +23,7 @@ protected:
 private slots:
     void onSendClicked();//发送按钮被点击
     void addChatUserList();//用于测试
+    //void slot_loading_chat_user();
 private:
     void ShowList(bool bsearch);
     void repositionSendBtn();//重新定位发送按钮
