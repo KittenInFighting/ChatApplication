@@ -10,5 +10,10 @@
         <file>style/chat_user_list.qss</file>
         <file>res/emoji.png</file>
         <file>res/file.png</file>
+        <file>res/red_point.png</file>
+        <file>res/chat.png</file>
+        <file>res/chat_press.png</file>
+        <file>res/contact.png</file>
+        <file>res/contact_press.PNG</file>
     </qresource>
 </RCC>

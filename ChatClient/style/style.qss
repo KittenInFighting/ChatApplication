@@ -204,3 +204,4 @@ QPushButton#add_btn:pressed { background: #CECECE; }
     background: transparent;
     border-right: 1px solid #E9EAEC;
 }
+

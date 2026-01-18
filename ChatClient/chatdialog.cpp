@@ -44,6 +44,61 @@ ChatDialog::ChatDialog(QWidget *parent)
                    | Qt::WindowCloseButtonHint);
     show();
 
+    ui->side_chat->SetState("normal", "hover", "pressed",
+                            "pressed", "pressed", "pressed");
+
+    ui->side_contact->SetState("normal", "hover", "pressed",
+                               "pressed", "pressed", "pressed");
+
+    ui->side_chat->setStyleSheet(R"(
+    #side_chat{
+     border: none;
+     background: transparent;
+     qproperty-iconSize: 20px 20px;
+    }
+
+    #side_chat[state='normal']{
+     qproperty-icon: url(:/res/chat.png);
+    }
+
+    #side_chat[state='hover']{
+     qproperty-icon: url(:/res/chat.png);
+     background: rgba(0,0,0,0.06);
+     border-radius: 6px;
+    }
+
+    #side_chat[state='pressed']{
+     qproperty-icon: url(:/res/chat_press.png);
+    }
+    )");
+
+    ui->side_contact->setStyleSheet(R"(
+    #side_contact{
+     border: none;
+     background: transparent;
+     qproperty-iconSize: 20px 20px;
+    }
+
+    #side_contact[state='normal']{
+     qproperty-icon: url(:/res/contact.png);
+    }
+
+    #side_contact[state='hover']{
+     qproperty-icon: url(:/res/contact.png);
+     background: rgba(0,0,0,0.06);
+     border-radius: 6px;
+    }
+
+    #side_contact[state='pressed']{
+     qproperty-icon: url(:/res/contact_press.PNG);
+    }
+    )");
+    AddLBGroup(ui->side_chat);
+    AddLBGroup(ui->side_contact);
+
+    connect(ui->side_chat, &StateWidget::clicked, this, &ChatDialog::slot_side_chat);
+    connect(ui->side_contact, &StateWidget::clicked, this, &ChatDialog::slot_side_contact);
+
     ui->search_edit->SetMaxLength(30);
     QPixmap pm(":/res/search.png");
     pm = pm.scaled(15, 15, Qt::KeepAspectRatio, Qt::SmoothTransformation);
@@ -235,5 +290,61 @@ void ChatDialog::ShowList(bool bsearch)
         ui->search_user_list->hide();
         ui->contact_user_list->show();
         _mode = ChatUIMode::ContactMode;
+    }
+}
+
+void ChatDialog::slot_side_chat()
+{
+    qDebug()<< "receive side chat clicked";
+    ClearLabelState(ui->side_chat);
+    ui->stackedWidget->setCurrentWidget(ui->chat_page);
+    _state = ChatUIMode::ChatMode;
+    ShowSearch();
+}
+
+void ChatDialog::slot_side_contact()
+{
+    qDebug()<< "receive side contact clicked";
+    ClearLabelState(ui->side_contact);
+    ui->stackedWidget->setCurrentWidget(ui->friend_apply_page);
+    _state = ChatUIMode::ContactMode;
+    ShowSearch();
+}
+
+void ChatDialog::ClearLabelState(StateWidget *lb)
+{
+    for(auto & ele: _lb_list){
+        if(ele == lb){
+            continue;
+        }
+
+        ele->ClearState();
+    }
+}
+
+void ChatDialog::AddLBGroup(StateWidget *lb)
+{
+    _lb_list.push_back(lb);
+}
+
+void ChatDialog::ShowSearch()
+{
+
+    if(_state == ChatUIMode::ChatMode){
+        ui->chat_user_list->show();
+        ui->contact_user_list->hide();
+        //ui->search_list->hide();
+        _mode = ChatUIMode::ChatMode;
+        //ui->search_list->CloseFindDlg();
+        ui->search_edit->clear();
+        ui->search_edit->clearFocus();
+    }else if(_state == ChatUIMode::ContactMode){
+        ui->chat_user_list->hide();
+        //ui->search_list->hide();
+        ui->contact_user_list->show();
+        _mode = ChatUIMode::ContactMode;
+        //ui->search_list->CloseFindDlg();
+        ui->search_edit->clear();
+        ui->search_edit->clearFocus();
     }
 }

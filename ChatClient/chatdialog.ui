@@ -126,40 +126,34 @@
              <number>0</number>
             </property>
             <item>
-             <widget class="QLabel" name="side_message_lab">
+             <widget class="StateWidget" name="side_chat" native="true">
               <property name="minimumSize">
                <size>
-                <width>35</width>
-                <height>35</height>
+                <width>30</width>
+                <height>30</height>
                </size>
               </property>
               <property name="maximumSize">
                <size>
-                <width>35</width>
-                <height>35</height>
+                <width>30</width>
+                <height>30</height>
                </size>
-              </property>
-              <property name="text">
-               <string>消息</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="side_contact_lab">
+             <widget class="StateWidget" name="side_contact" native="true">
               <property name="minimumSize">
                <size>
-                <width>35</width>
-                <height>35</height>
+                <width>30</width>
+                <height>30</height>
                </size>
               </property>
               <property name="maximumSize">
                <size>
-                <width>35</width>
-                <height>35</height>
+                <width>30</width>
+                <height>30</height>
                </size>
-              </property>
-              <property name="text">
-               <string>联系人</string>
               </property>
              </widget>
             </item>
@@ -482,7 +476,7 @@
           </size>
          </property>
         </widget>
-        <widget class="QWidget" name="friend_page">
+        <widget class="QWidget" name="friend_apply_page">
          <property name="minimumSize">
           <size>
            <width>570</width>
@@ -517,6 +511,12 @@
    <class>ChatPage</class>
    <extends>QWidget</extends>
    <header>chatpage.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>StateWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">statewidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

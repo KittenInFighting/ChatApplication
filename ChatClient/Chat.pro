@@ -28,7 +28,9 @@ SOURCES += \
     registerdialog.cpp \
     resetdialog.cpp \
     searchedit.cpp \
+    searchlist.cpp \
     shortscrollbar.cpp \
+    statewidget.cpp \
     tcpmgr.cpp \
     textbubble.cpp \
     timerbtn.cpp \
@@ -54,11 +56,14 @@ HEADERS += \
     registerdialog.h \
     resetdialog.h \
     searchedit.h \
+    searchlist.h \
     shortscrollbar.h \
     singleton.h \
+    statewidget.h \
     tcpmgr.h \
     textbubble.h \
     timerbtn.h \
+    userdata.h \
     usermgr.h
 
 FORMS += \

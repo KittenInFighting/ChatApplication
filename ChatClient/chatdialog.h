@@ -2,6 +2,7 @@
 #define CHATDIALOG_H
 
 #include "global.h"
+#include "statewidget.h"
 #include <QDialog>
 #include <QPushButton>
 
@@ -21,18 +22,19 @@ protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
 
 private slots:
-    //void onSendClicked();//发送按钮被点击
     void addChatUserList();//用于测试
-    //void slot_loading_chat_user();
+    void slot_side_chat();
+    void slot_side_contact();
 private:
     void ShowList(bool bsearch);
-    //void repositionSendBtn();//重新定位发送按钮
+    void ClearLabelState(StateWidget *lb);
+    void AddLBGroup(StateWidget *lb);
+    void ShowSearch();
     Ui::ChatDialog *ui;
-   // QPushButton *sendBtn = nullptr;
-
     ChatUIMode _mode;
     ChatUIMode _state;
     bool _b_loading;
+    QList<StateWidget*> _lb_list;
 };
 
 #endif // CHATDIALOG_H
