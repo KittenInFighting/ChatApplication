@@ -1,8 +1,11 @@
 #include "chatdialog.h"
 #include "ui_chatdialog.h"
 #include "addbtn.h"
+#include "userdata.h"
 #include "chatuserwid.h"
+#include "findsuccessdlg.h"
 #include <QString>
+#include <memory>
 #include <QToolButton>
 #include <QRandomGenerator>
 
@@ -10,7 +13,12 @@ std::vector<QString>  strs ={"hello !00000000000000",
                              "nice to meet u0000000000000",
                              "Ohiyo0000000000000000",
                              "Dear00000000000000",
-                             "My Honey00000000000000"};
+                             "My Honey00000000000000",
+                             "hello !",
+                             "nice to meet u",
+                             "Ohiyo",
+                             "My Honey"
+                             "Dear"};
 
 std::vector<QString> heads = {
     ":/res/1.jpg",
@@ -22,6 +30,11 @@ std::vector<QString> names = {
     "Asahi00000000000",
     "Momiji000000000",
     "Kade00000000000",
+    "Mihari",
+    "Mahiro"
+    "Asahi"
+    "Momiji"
+    "Kade"
 };
 
 std::vector<QString> times = {
@@ -45,10 +58,10 @@ ChatDialog::ChatDialog(QWidget *parent)
     show();
 
     ui->side_chat->SetState("normal", "hover", "pressed",
-                            "pressed", "pressed", "pressed");
+                            "pressed", "pressed_hover", "pressed");
 
     ui->side_contact->SetState("normal", "hover", "pressed",
-                               "pressed", "pressed", "pressed");
+                               "pressed", "pressed_hover", "pressed");
 
     ui->side_chat->setStyleSheet(R"(
     #side_chat{
@@ -69,6 +82,11 @@ ChatDialog::ChatDialog(QWidget *parent)
 
     #side_chat[state='pressed']{
      qproperty-icon: url(:/res/chat_press.png);
+    }
+    #side_chat[state='pressed_hover']{
+     qproperty-icon: url(:/res/chat_press.png);
+     background: rgba(0,0,0,0.06);
+     border-radius: 6px;
     }
     )");
 
@@ -91,6 +109,11 @@ ChatDialog::ChatDialog(QWidget *parent)
 
     #side_contact[state='pressed']{
      qproperty-icon: url(:/res/contact_press.PNG);
+    }
+    #side_contact[state='pressed_hover']{
+     qproperty-icon: url(:/res/contact_press.PNG);
+     background: rgba(0,0,0,0.06);
+     border-radius: 6px;
     }
     )");
     AddLBGroup(ui->side_chat);
@@ -142,6 +165,14 @@ ChatDialog::ChatDialog(QWidget *parent)
     vline->setFixedWidth(1);
     vline->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
     vline->setStyleSheet("background:#E6E8EB;");
+    if (auto *bodyLay = qobject_cast<QHBoxLayout*>(ui->widget_2->layout())) {
+        int chatIdx = bodyLay->indexOf(ui->chat_user_wid);
+        if (chatIdx >= 0) {
+            bodyLay->insertWidget(chatIdx + 1, vline);
+        } else {
+            bodyLay->addWidget(vline);
+        }
+    }
 
     //ChatDialog 的主布局
     QHBoxLayout* mainLay = qobject_cast<QHBoxLayout*>(this->layout());
@@ -230,11 +261,23 @@ ChatDialog::ChatDialog(QWidget *parent)
             });
 
     this->installEventFilter(this);
+
+    //设置默认选中聊天界面
+    ui->side_chat->SetSelected(true);
+    ui->stackedWidget->setCurrentWidget(ui->chat_page);
 }
 
 ChatDialog::~ChatDialog()
 {
     delete ui;
+}
+
+void ChatDialog::CloseFindDlg()
+{
+    if(_find_dlg){
+        _find_dlg->hide();
+        _find_dlg = nullptr;
+    }
 }
 
 bool ChatDialog::eventFilter(QObject *obj, QEvent *event)
@@ -348,3 +391,15 @@ void ChatDialog::ShowSearch()
         ui->search_edit->clearFocus();
     }
 }
+
+void ChatDialog::on_add_btn_clicked()
+{
+    //搜索处理
+    _find_dlg = std::make_shared<FindSuccessDlg>(this);
+    //暂时设置搜索到的信息
+    auto si = std::make_shared<SearchInfo>(0,"Momiji","Momiji","hello , my friend!",0,"icon");
+    (std::dynamic_pointer_cast<FindSuccessDlg>(_find_dlg))->SetSearchInfo(si);
+    _find_dlg->show();
+    return;
+}
+

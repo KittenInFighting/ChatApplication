@@ -293,7 +293,7 @@ bool RegisterDialog::eventFilter(QObject* watched, QEvent* event)
         return QDialog::eventFilter(watched, event);
     }
 
-    // 2. MousePress：点击空白/不可聚焦控件时补齐（FocusOut 可能不发生）
+    // 2. MousePress：点击空白/不可聚焦控件时补齐
     if (event->type() == QEvent::MouseButtonPress) {
 
         // 校验 count
@@ -323,7 +323,7 @@ bool RegisterDialog::eventFilter(QObject* watched, QEvent* event)
 
 void RegisterDialog::checkNotEmpty(QLineEdit* edit, QLabel* errLabel, const QString& msg)
 {
-    // trimmed() 防止只输入空格也被当作“有内容”
+    // trimmed() 防止只输入空格也被当作有内容
     const QString text = edit->text().trimmed();
 
     if (text.isEmpty()) {
@@ -346,7 +346,7 @@ bool RegisterDialog::clickedOutside(QLineEdit* edit, QObject* watchedObj) const
     QWidget* w = qobject_cast<QWidget*>(watchedObj);
     if (!w) return false;
 
-    // 如果点击的是 edit 本身或其子控件（一般 edit 没子控件，但写全更稳），就认为没“点出去”
+    // 如果点击的是 edit 本身或其子控件，就认为没点出去
     if (w == edit || edit->isAncestorOf(w)) return false;
 
     return true;
@@ -457,13 +457,13 @@ QString RegisterDialog::pwdErrorMsg() const
 
 bool RegisterDialog::hasBadRepeatOrSequence(const QString& s) const
 {
-    // --- A) 检测重复：例如 111111 或 aaaaaa（连续相同字符 >= 6）
+    //检测重复：例如 111111 或 aaaaaa（连续相同字符 >= 6）
     int repeatCount = 1;
     for (int i = 1; i < s.size(); ++i) {
         const QChar prev = s[i - 1];
         const QChar curr = s[i];
 
-        // 只针对字母/数字（按你的规则）
+        // 只针对字母/数字
         if (!prev.isLetterOrNumber() || !curr.isLetterOrNumber()) {
             repeatCount = 1;
             continue;
@@ -500,7 +500,7 @@ bool RegisterDialog::hasBadRepeatOrSequence(const QString& s) const
         prev = normChar(prev);
         curr = normChar(curr);
 
-        // 必须同一类：都是数字 or 都是字母
+        // 必须都是数字 or 都是字母
         const bool bothDigit  = prev.isDigit()  && curr.isDigit();
         const bool bothLetter = prev.isLetter() && curr.isLetter();
         if (!bothDigit && !bothLetter) {
@@ -553,7 +553,7 @@ void RegisterDialog::setupPwdEyeButton()
     if (!edit) return;
 
     // 1) 代码创建一个 QToolButton，名字必须和你要求的一样
-    auto* btn = new QToolButton(edit);                // parent 设为 lineEdit => “嵌入”到输入框内部
+    auto* btn = new QToolButton(edit);                // parent 设为 lineEdit嵌入到输入框内部
     btn->setObjectName("pwdEyeBtn");                  // 名字相同
     btn->setCursor(Qt::PointingHandCursor);
 

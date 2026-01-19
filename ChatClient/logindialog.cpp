@@ -38,7 +38,6 @@ LoginDialog::LoginDialog(QWidget *parent)
     // 2) 设置一张头像
     setAvatar(":/res/1.jpg");
 
-    // 让 label 不吃背景
     ui->head_label->setStyleSheet("background: transparent;");
 
     //geiregister_label绑定点击事件
@@ -119,7 +118,7 @@ QPixmap LoginDialog::makeRoundPixmap(const QPixmap &src, int diameter,int border
 {
     if (src.isNull() || diameter <= 0) return QPixmap();
 
-    // 先缩放到足够大，再裁剪，保证清晰
+    // 先缩放，再裁剪
     QPixmap scaled = src.scaled(diameter, diameter,
                                 Qt::KeepAspectRatioByExpanding,
                                 Qt::SmoothTransformation);

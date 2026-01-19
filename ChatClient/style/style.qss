@@ -65,7 +65,7 @@ QToolButton#btnClose:pressed {
 #register_label,#forget_label{
     color:rgb(73,139,233);
 }
-/* 设置LineEdit的样式*/
+/* LineEdit style */
 QDialog#LoginDialog QLineEdit,
 QDialog#LoginDialog QLineEdit:focus,
 QDialog#RegisterDialog QLineEdit,
@@ -122,42 +122,41 @@ QToolButton#pwdEyeBtn:focus {
 
 /* ===== 整个窗口 ===== */
 QDialog#ChatDialog{
-    background:#FFFFFF;
+    background:#F5F5F5;
 }
 /* ===== 左侧栏：side_bar ===== */
 #side_bar{
-    background:#FFFFFF;
+    background:#F5F5F5;
     border-right:1px solid #E6E8EB;
 }
 
 /* ===== 左侧用户列表区域：chat_user_wid ===== */
 /*#chat_user_wid{
-    background:#FFFFFF;
+    background:#F5F5F5;
     border-right:1px solid #E6E8EB;
 }*/
 
 /* ===== 搜索区域：search_wid ===== */
 #search_wid{
     background: transparent;
-    border-right: 1px solid #E9EAEC;
-    background:#FFFFFF;
+    background:#F5F5F5;
 }
 
 /* ===== 名字区域：title_wid ===== */
 #title_wid{
-    background:#FFFFFF;
+    background:#F5F5F5;
     border-bottom:1px solid #E6E8EB;
 }
 
 /* 输入区工具栏：mode_wid 顶部分割线 */
 #mode_wid{
-    background:#FFFFFF;
+    background:#F5F5F5;
     border-top:1px solid #E6E8EB;
 }
 
 #textEdit{
     border: none;
-    background: #FFFFFF;   /* 保持白底 */
+    background: #F5F5F5;   /* 保持白底 */
 }
 
 QLineEdit#search_edit{
@@ -181,7 +180,7 @@ QLineEdit#search_edit:focus{
 /* 让 lineedit 内部 action 变成无边框透明按钮 */
 QLineEdit#search_edit QToolButton{
     border: none;
-    background: background:#EBEBEB;
+    background: #EBEBEB;
     padding: 0px;
 }
 QLineEdit#search_edit QToolButton:hover{
@@ -196,12 +195,11 @@ QPushButton#add_btn:pressed { background: #CECECE; }
 
 #chat_user_list, #contact_user_list, #search_user_list{
     border:none;
-    background:#FFFFFF;
+    background:#F5F5F5;
     outline:none;
 }
 
 #list_wid{
     background: transparent;
-    border-right: 1px solid #E9EAEC;
 }
 

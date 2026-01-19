@@ -124,7 +124,7 @@ void ChatView::initStyleSheet()
 {
     this->setStyleSheet(R"(
     QWidget#chat_bg {
-    background-color: #FFFFFF;
+    background-color: #F5F5F5;
     }
 
     QScrollArea {

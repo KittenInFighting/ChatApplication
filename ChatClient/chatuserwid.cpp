@@ -27,6 +27,7 @@ static QPixmap makeRoundPixmap(const QPixmap& src, int size)
 
     return out;
 }
+
 void ChatUserWid::updateMsgElide()
 {
     // 只显示一行，超出显示省略号
@@ -105,7 +106,7 @@ void ChatUserWid::SetInfo(QString name, QString head, QString msg,QString time)
     QPixmap pixmap(_head);
 
     //头像：裁圆 + 固定大小
-    const int avatarSize = 36;
+    const int avatarSize = 38;
     ui->icon_lab->setFixedSize(avatarSize, avatarSize);
     QPixmap pix(head);
     ui->icon_lab->setPixmap(makeRoundPixmap(pix, avatarSize));
@@ -122,4 +123,5 @@ void ChatUserWid::SetInfo(QString name, QString head, QString msg,QString time)
     ui->time_lab->setText(_time);
 
     updateMsgElide();
+    updateNameElide();
 }

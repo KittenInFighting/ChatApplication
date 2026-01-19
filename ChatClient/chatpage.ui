@@ -122,7 +122,7 @@
             <item>
              <widget class="QLabel" name="title_lab">
               <property name="text">
-               <string>名字名字</string>
+               <string>Momiji</string>
               </property>
              </widget>
             </item>

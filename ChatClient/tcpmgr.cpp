@@ -1,5 +1,6 @@
 #include "tcpmgr.h"
 #include "usermgr.h"
+#include "userdata.h"
 #include <QMessageBox>
 
 TcpMgr::TcpMgr():_host(""),_port(0),_b_recv_pending(false),_message_id(0),_message_len(0)
@@ -85,7 +86,9 @@ void TcpMgr::initHandlers()
             return;
         }
 
+
         QJsonObject jsonObj = jsonDoc.object();
+        qDebug()<< "data jsonobj is " << jsonObj;
 
         if(!jsonObj.contains("error")){
             int err = ErrorCodes::ERR_JSON;
@@ -101,8 +104,15 @@ void TcpMgr::initHandlers()
             return;
         }
 
-        UserMgr::GetInstance()->SetUid(jsonObj["uid"].toInt());
-        UserMgr::GetInstance()->SetName(jsonObj["name"].toString());
+        auto uid = jsonObj["uid"].toInt();
+        auto name = jsonObj["name"].toString();
+        auto nick = jsonObj["nick"].toString();
+        auto icon = jsonObj["icon"].toString();
+        auto sex = jsonObj["sex"].toInt();
+        auto desc = jsonObj["desc"].toString();
+        auto user_info = std::make_shared<UserInfo>(uid, name, nick, icon, sex,"",desc);
+
+        UserMgr::GetInstance()->SetUserInfo(user_info);
         UserMgr::GetInstance()->SetToken(jsonObj["token"].toString());
     });
 }

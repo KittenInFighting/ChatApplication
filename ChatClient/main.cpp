@@ -29,6 +29,5 @@ int main(int argc, char *argv[])
     gate_url_prefix = "http://" + gate_host + ":" + gate_port;
 
     MainWindow mainwindow;
-    //mainwindow.show();
     return a.exec();
 }

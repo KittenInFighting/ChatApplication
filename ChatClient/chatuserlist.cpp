@@ -19,21 +19,24 @@ ChatUserList::ChatUserList(QWidget *parent)
     auto *sb = new ShortScrollBar(Qt::Vertical, this);
     setVerticalScrollBar(sb);
 
-    // qss（qproperty 版本）
-    QFile f(":/style/chat_user_list.qss");
-    qDebug() << "qss open" << f.open(QFile::ReadOnly) << f.errorString();
-    const QString qss = QString::fromUtf8(f.readAll());
-    sb->setStyleSheet(qss);
-    setObjectName("chat_user_list");
-
     setStyleSheet(R"(
     QListWidget { outline: 0px; }
     QListWidget::item:selected { background: transparent; border: none; }
     QListWidget::item { border: none; }
 
     QWidget#chat_user_item { background: transparent; border-radius: 6px; }
-    QWidget#chat_user_item[hover="true"] { background: rgba(0,0,0,10); }
-    QWidget#chat_user_item[selected="true"] { background: rgba(0,0,0,18); }
+    QWidget#chat_user_item[hover="true"] { background: #EBEBEB; }
+    QWidget#chat_user_item[selected="true"] { background: #E2E2E2; }
+
+    ShortScrollBar {
+    qproperty-barWidth: 6;
+    qproperty-radius: 3;
+    qproperty-handleLength: 18;
+
+    qproperty-handleColor: rgba(0, 0, 0, 75);
+    qproperty-handleHoverColor: rgba(0, 0, 0, 110);
+    qproperty-handlePressedColor: rgba(0, 0, 0, 140);
+    }
     )");
     // 像素滚动
     setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);

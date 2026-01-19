@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ChatUserWid</class>
- <widget class="QWidget" name="ChatUserWid">
+ <class>ConUserItem</class>
+ <widget class="QWidget" name="ConUserItem">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>199</width>
+    <width>200</width>
     <height>60</height>
    </rect>
   </property>
@@ -81,14 +81,14 @@
        <widget class="QWidget" name="icon_wid" native="true">
         <property name="minimumSize">
          <size>
-          <width>40</width>
-          <height>40</height>
+          <width>36</width>
+          <height>36</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>40</width>
-          <height>40</height>
+          <width>36</width>
+          <height>36</height>
          </size>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -117,14 +117,14 @@
            </property>
            <property name="minimumSize">
             <size>
-             <width>45</width>
-             <height>45</height>
+             <width>36</width>
+             <height>36</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>45</width>
-             <height>45</height>
+             <width>36</width>
+             <height>36</height>
             </size>
            </property>
            <property name="text">
@@ -145,13 +145,13 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>144</width>
+          <width>154</width>
           <height>60</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>154</width>
+          <width>164</width>
           <height>60</height>
          </size>
         </property>
@@ -160,7 +160,7 @@
           <number>0</number>
          </property>
          <property name="leftMargin">
-          <number>3</number>
+          <number>0</number>
          </property>
          <property name="topMargin">
           <number>0</number>
@@ -202,7 +202,7 @@
              <number>3</number>
             </property>
             <property name="rightMargin">
-             <number>23</number>
+             <number>80</number>
             </property>
             <property name="bottomMargin">
              <number>0</number>
@@ -265,73 +265,6 @@
               </layout>
              </widget>
             </item>
-            <item>
-             <widget class="QWidget" name="widget_4" native="true">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>56</width>
-                <height>20</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>56</width>
-                <height>20</height>
-               </size>
-              </property>
-              <layout class="QVBoxLayout" name="verticalLayout_3">
-               <property name="spacing">
-                <number>0</number>
-               </property>
-               <property name="leftMargin">
-                <number>0</number>
-               </property>
-               <property name="topMargin">
-                <number>0</number>
-               </property>
-               <property name="rightMargin">
-                <number>0</number>
-               </property>
-               <property name="bottomMargin">
-                <number>0</number>
-               </property>
-               <item>
-                <widget class="QLabel" name="time_lab">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="minimumSize">
-                  <size>
-                   <width>56</width>
-                   <height>10</height>
-                  </size>
-                 </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>56</width>
-                   <height>10</height>
-                  </size>
-                 </property>
-                 <property name="text">
-                  <string>TextLabel</string>
-                 </property>
-                 <property name="alignment">
-                  <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </item>
            </layout>
           </widget>
          </item>
@@ -366,7 +299,7 @@
              <number>0</number>
             </property>
             <item>
-             <widget class="QLabel" name="user_chat_lab">
+             <widget class="QLabel" name="user_state_lab">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
                 <horstretch>0</horstretch>
@@ -386,7 +319,7 @@
                </size>
               </property>
               <property name="text">
-               <string>Hi!!!</string>
+               <string>[在线]</string>
               </property>
              </widget>
             </item>
