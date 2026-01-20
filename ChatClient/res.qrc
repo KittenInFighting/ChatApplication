@@ -14,5 +14,9 @@
         <file>res/chat_press.png</file>
         <file>res/contact.png</file>
         <file>res/contact_press.PNG</file>
+        <file>res/close.png</file>
+        <file>res/max.png</file>
+        <file>res/max2.png</file>
+        <file>res/minus.png</file>
     </qresource>
 </RCC>

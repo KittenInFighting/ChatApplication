@@ -4,11 +4,19 @@
 #include "global.h"
 #include "statewidget.h"
 #include <QDialog>
+#include <QPoint>
 #include <QPushButton>
 
 namespace Ui {
 class ChatDialog;
 }
+
+class QLabel;
+class QEvent;
+class QMouseEvent;
+class QPaintEvent;
+class QResizeEvent;
+class QToolButton;
 
 class ChatDialog : public QDialog
 {
@@ -20,6 +28,14 @@ public:
     void CloseFindDlg();
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
+    void paintEvent(QPaintEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
+    void changeEvent(QEvent *event) override;
+    bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result) override;
 
 private slots:
     void addChatUserList();//用于测试
@@ -28,10 +44,24 @@ private slots:
     void on_add_btn_clicked();
 
 private:
+    void initTitleBar();
+    void updateWindowMask();
+    void updateTitleButtons();
+    void toggleMaxRestore();
+    bool hitTitleBar(const QPoint &pos) const;
     void ShowList(bool bsearch);
     void ClearLabelState(StateWidget *lb);
     void AddLBGroup(StateWidget *lb);
     void ShowSearch();
+
+    QWidget *m_titleBar = nullptr;
+    QLabel *m_titleLabel = nullptr;
+    QToolButton *m_minBtn = nullptr;
+    QToolButton *m_maxBtn = nullptr;
+    QToolButton *m_closeBtn = nullptr;
+    bool m_dragging = false;
+    QPoint m_dragPos;
+
     Ui::ChatDialog *ui;
     ChatUIMode _mode;
     ChatUIMode _state;

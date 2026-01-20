@@ -34,7 +34,7 @@ QRect ShortScrollBar::handleRect() const
 {
     QRect g = grooveRect();
     if (maximum() <= minimum() || g.height() <= m_len) {
-        // 没内容可滚动就不画
+        // 没内容可滚动就不�?
         return QRect();
     }
 
@@ -69,14 +69,13 @@ void ShortScrollBar::paintEvent(QPaintEvent *)
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing, true);
 
-    // 轨道
+    // groove
     QRect g = grooveRect();
     p.setPen(Qt::NoPen);
-    p.setBrush(QColor(0,0,0,0)); // 轨道透明
-    // p.setBrush(QColor(0,0,0,15));
+    p.setBrush(QColor(245, 245, 245));
     p.drawRoundedRect(g, m_r, m_r);
 
-    // 没有可滚动范围，就不画滑块
+    // no range
     if (maximum() <= minimum()) return;
 
     QRect h = handleRect();
@@ -86,6 +85,7 @@ void ShortScrollBar::paintEvent(QPaintEvent *)
     if (m_dragging) c = m_pressed;
     else if (m_hovering) c = m_hover;
 
+    p.setPen(Qt::NoPen);
     p.setBrush(c);
     p.drawRoundedRect(h, m_r, m_r);
 }
@@ -120,7 +120,7 @@ void ShortScrollBar::mousePressEvent(QMouseEvent *e)
         return;
     }
 
-    // 点击轨道：把滑块中心跳过去
+    // 点击轨道：把滑块中心跳过�?
     m_dragging = true;
     m_dragOffset = m_len / 2;
     setValue(valueFromPos(e->pos().y()));
@@ -153,3 +153,6 @@ void ShortScrollBar::mouseReleaseEvent(QMouseEvent *e)
     }
     QScrollBar::mouseReleaseEvent(e);
 }
+
+
+

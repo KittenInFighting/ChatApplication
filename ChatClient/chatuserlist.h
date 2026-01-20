@@ -7,6 +7,7 @@
 #include <QScrollBar>
 #include <QDebug>
 #include <QPropertyAnimation>
+class QMouseEvent;
 class ChatUserList: public QListWidget
 {
     Q_OBJECT
@@ -17,11 +18,15 @@ public:
     void updateHoverItemAt(const QPoint& viewportPos);
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
     void smoothScrollTo(int target);
     void scrollContentsBy(int dx, int dy) override;
 
 private:
     void updateHoverItem();
+    QListWidgetItem* m_pressedItem = nullptr;
+    bool m_pressedItemWasSelected = false;
+    void clearHoverItem();
     QPropertyAnimation *m_scrollAnim = nullptr;
     QListWidgetItem* m_hoverItem = nullptr;
     int m_targetValue = 0;

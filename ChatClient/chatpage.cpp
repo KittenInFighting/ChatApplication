@@ -80,8 +80,8 @@ ChatPage::ChatPage(QWidget *parent)
     //显示在最上层
     sendBtn->raise();
     // 右下角留空隙
-    const int padding = 10;
-    te->setOverlayMargins(sendBtn->width() + padding, sendBtn->height() + padding);
+    const int padding = 15;
+    te->setOverlayMargins(sendBtn->width() + padding + 10, sendBtn->height() + padding);
     //初次定位按钮
     repositionSendBtn();
     //textEdit 变化大小时，重新定位按钮

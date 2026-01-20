@@ -6,8 +6,51 @@
 #include "findsuccessdlg.h"
 #include <QString>
 #include <memory>
+#include <QEvent>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QMouseEvent>
+#include <QPainter>
+#include <QPainterPath>
+#include <QPixmap>
+#include <QResizeEvent>
+#include <QRegion>
+#include <QStyle>
 #include <QToolButton>
+#include <QVBoxLayout>
 #include <QRandomGenerator>
+#ifdef Q_OS_WIN
+#include <windows.h>
+#include <dwmapi.h>
+#include <windowsx.h>
+#endif
+
+namespace {
+constexpr int kTitleBarHeight = 38;
+constexpr int kWindowRadius = 10;
+
+QPixmap makeRoundPixmap(const QPixmap &src, int size)
+{
+    if (src.isNull() || size <= 0) return QPixmap();
+
+    const QPixmap scaled = src.scaled(size, size,
+                                      Qt::KeepAspectRatioByExpanding,
+                                      Qt::SmoothTransformation);
+    QPixmap out(size, size);
+    out.fill(Qt::transparent);
+
+    QPainter p(&out);
+    p.setRenderHint(QPainter::Antialiasing, true);
+
+    QPainterPath path;
+    path.addEllipse(0, 0, size, size);
+    p.setClipPath(path);
+    const int x = (size - scaled.width()) / 2;
+    const int y = (size - scaled.height()) / 2;
+    p.drawPixmap(x, y, scaled);
+    return out;
+}
+}
 
 std::vector<QString>  strs ={"hello !00000000000000",
                              "nice to meet u0000000000000",
@@ -51,11 +94,14 @@ ChatDialog::ChatDialog(QWidget *parent)
 {
     ui->setupUi(this);
     //设置窗口边框
-    setWindowFlags(Qt::Window
-                   | Qt::WindowMinimizeButtonHint
-                   | Qt::WindowMaximizeButtonHint
-                   | Qt::WindowCloseButtonHint);
-    show();
+    setWindowTitle("MyChat");
+    setWindowFlags(Qt::FramelessWindowHint | Qt::Window);
+    setAttribute(Qt::WA_TranslucentBackground, true);
+    setAttribute(Qt::WA_NoSystemBackground, true);
+    setAttribute(Qt::WA_StyledBackground, true);
+    initTitleBar();
+    updateWindowMask();
+    setMinimumHeight(minimumHeight() + kTitleBarHeight);
 
     ui->side_chat->SetState("normal", "hover", "pressed",
                             "pressed", "pressed_hover", "pressed");
@@ -183,7 +229,7 @@ ChatDialog::ChatDialog(QWidget *parent)
 
     //防止被 spacing/margin 挤掉
     mainLay->setSpacing(0);
-    mainLay->setContentsMargins(0, 0, 0, 0);
+    mainLay->setContentsMargins(0, kTitleBarHeight, 0, 0);
 
     //右侧清空“×”action默认隐藏
     QAction* clearAct = ui->search_edit->addAction(
@@ -282,6 +328,45 @@ void ChatDialog::CloseFindDlg()
 
 bool ChatDialog::eventFilter(QObject *obj, QEvent *event)
 {
+    if (obj == m_titleBar) {
+        if (event->type() == QEvent::MouseButtonPress) {
+            auto *me = static_cast<QMouseEvent *>(event);
+            if (me->button() == Qt::LeftButton) {
+                m_dragging = true;
+                m_dragPos = me->globalPosition().toPoint() - frameGeometry().topLeft();
+                return true;
+            }
+        } else if (event->type() == QEvent::MouseMove) {
+            auto *me = static_cast<QMouseEvent *>(event);
+            if (m_dragging && (me->buttons() & Qt::LeftButton)) {
+                const QPoint globalPos = me->globalPosition().toPoint();
+                if (isMaximized()) {
+                    const int w = width();
+                    const qreal ratio = (w > 0) ? (me->position().x() / qreal(w)) : 0.5;
+                    showNormal();
+                    updateTitleButtons();
+                    updateWindowMask();
+
+                    const int newX = globalPos.x() - int(width() * ratio);
+                    const int newY = globalPos.y() - int(me->position().y());
+                    move(newX, newY);
+                    m_dragPos = globalPos - frameGeometry().topLeft();
+                }
+                move(globalPos - m_dragPos);
+                return true;
+            }
+        } else if (event->type() == QEvent::MouseButtonRelease) {
+            m_dragging = false;
+            return true;
+        } else if (event->type() == QEvent::MouseButtonDblClick) {
+            auto *me = static_cast<QMouseEvent *>(event);
+            if (me->button() == Qt::LeftButton) {
+                toggleMaxRestore();
+                return true;
+            }
+        }
+    }
+
     if (event->type() == QEvent::MouseButtonPress)
     {
         // 当前焦点在 search_edit 上才处理
@@ -297,6 +382,282 @@ bool ChatDialog::eventFilter(QObject *obj, QEvent *event)
     }
     // 继续交给父类处理
     return QDialog::eventFilter(obj, event);
+}
+
+void ChatDialog::initTitleBar()
+{
+    m_titleBar = new QWidget(this);
+    m_titleBar->setObjectName("chat_title_bar");
+    m_titleBar->setFixedHeight(kTitleBarHeight);
+    m_titleBar->setAttribute(Qt::WA_StyledBackground, true);
+    m_titleBar->setStyleSheet(
+        "#chat_title_bar{background:#EBEBEB;}"
+        "QToolButton{border:none;background:transparent;border-radius:6px;}"
+        "QToolButton:hover{background:#BFBFBF;}"
+        );
+
+    auto *layout = new QHBoxLayout(m_titleBar);
+    layout->setContentsMargins(10, 0, 6, 0);
+    layout->setSpacing(4);
+
+    m_titleLabel = new QLabel(windowTitle(), m_titleBar);
+    m_titleLabel->setObjectName("chat_title_label");
+    m_titleLabel->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
+    m_titleLabel->setStyleSheet("color:#202020;font-size:12px;");
+    m_titleLabel->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+    layout->addWidget(m_titleLabel);
+
+    auto *info = new QWidget(m_titleBar);
+    info->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+    auto *infoLayout = new QHBoxLayout(info);
+    infoLayout->setContentsMargins(10, 0, 10, 0);
+    infoLayout->setSpacing(6);
+
+    const int avatarSize = 24;
+    auto *avatar = new QLabel(info);
+    avatar->setFixedSize(avatarSize, avatarSize);
+    avatar->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+    avatar->setPixmap(makeRoundPixmap(QPixmap(":/res/1.jpg"), avatarSize));
+    avatar->setScaledContents(false);
+
+    auto *textWrap = new QWidget(info);
+    textWrap->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+    auto *textLayout = new QHBoxLayout(textWrap);
+    textLayout->setContentsMargins(0, 0, 0, 0);
+    textLayout->setSpacing(8);
+
+    auto *nameLabel = new QLabel(QStringLiteral("牡牡蛎"), textWrap);
+    nameLabel->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+    nameLabel->setStyleSheet("color:#202020;font-size:14px;");
+
+    auto *signLabel = new QLabel(QStringLiteral("事缓则圆，人缓则安"), textWrap);
+    signLabel->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+    signLabel->setStyleSheet("color:#6B6B6B;font-size:11px;");
+
+    textLayout->addWidget(nameLabel);
+    textLayout->addWidget(signLabel);
+
+    infoLayout->addWidget(avatar);
+    infoLayout->addWidget(textWrap);
+    layout->addWidget(info);
+    layout->addStretch();
+
+    m_minBtn = new QToolButton(m_titleBar);
+    m_minBtn->setObjectName("chat_min_btn");
+    m_minBtn->setFixedSize(40, kTitleBarHeight - 2);
+    m_minBtn->setFocusPolicy(Qt::NoFocus);
+    m_minBtn->setIcon(QIcon(":/res/minus.png"));
+    m_minBtn->setIconSize(QSize(18, 18));
+    connect(m_minBtn, &QToolButton::clicked, this, &QWidget::showMinimized);
+
+    m_maxBtn = new QToolButton(m_titleBar);
+    m_maxBtn->setObjectName("chat_max_btn");
+    m_maxBtn->setFixedSize(40, kTitleBarHeight - 2);
+    m_maxBtn->setFocusPolicy(Qt::NoFocus);
+    connect(m_maxBtn, &QToolButton::clicked, this, &ChatDialog::toggleMaxRestore);
+
+    m_closeBtn = new QToolButton(m_titleBar);
+    m_closeBtn->setObjectName("chat_close_btn");
+    m_closeBtn->setFixedSize(40, kTitleBarHeight - 2);
+    m_closeBtn->setFocusPolicy(Qt::NoFocus);
+    m_closeBtn->setIcon(QIcon(":/res/close.png"));
+    m_closeBtn->setIconSize(QSize(8, 8));
+    connect(m_closeBtn, &QToolButton::clicked, this, &QWidget::close);
+
+    layout->addWidget(m_minBtn);
+    layout->addWidget(m_maxBtn);
+    layout->addWidget(m_closeBtn);
+
+    updateTitleButtons();
+    m_titleBar->setGeometry(0, 0, width(), kTitleBarHeight);
+    m_titleBar->raise();
+    m_titleBar->installEventFilter(this);
+}
+
+void ChatDialog::updateTitleButtons()
+{
+    if (!m_maxBtn) return;
+    if (isMaximized()) {
+        m_maxBtn->setIcon(QIcon(":/res/max2.png"));
+        m_maxBtn->setIconSize(QSize(18, 18));
+    } else {
+        m_maxBtn->setIcon(QIcon(":/res/max.png"));
+        m_maxBtn->setIconSize(QSize(14, 14));
+    }
+
+}
+
+void ChatDialog::toggleMaxRestore()
+{
+    if (isMaximized()) {
+        showNormal();
+    } else {
+        showMaximized();
+    }
+    updateTitleButtons();
+    updateWindowMask();
+}
+
+bool ChatDialog::hitTitleBar(const QPoint &pos) const
+{
+    if (!m_titleBar || pos.y() >= kTitleBarHeight) return false;
+
+    const QPoint localPos = m_titleBar->mapFromParent(pos);
+    if (m_minBtn && m_minBtn->geometry().contains(localPos)) return false;
+    if (m_maxBtn && m_maxBtn->geometry().contains(localPos)) return false;
+    if (m_closeBtn && m_closeBtn->geometry().contains(localPos)) return false;
+
+    return true;
+}
+
+void ChatDialog::updateWindowMask()
+{
+    clearMask();
+#ifdef Q_OS_WIN
+    const int kAttr = 33; // DWMWA_WINDOW_CORNER_PREFERENCE
+    const int kDoNotRound = 1; // DWMWCP_DONOTROUND
+    const int kRound = 2; // DWMWCP_ROUND
+    const int pref = isMaximized() ? kDoNotRound : kRound;
+    DwmSetWindowAttribute(reinterpret_cast<HWND>(winId()), kAttr, &pref, sizeof(pref));
+#endif
+}
+
+void ChatDialog::paintEvent(QPaintEvent *event)
+{
+    Q_UNUSED(event);
+    QPainter p(this);
+    p.setRenderHint(QPainter::Antialiasing, true);
+    p.setPen(Qt::NoPen);
+
+    const QColor bg(245, 245, 245);
+    if (isMaximized()) {
+        p.setBrush(bg);
+        p.drawRect(rect());
+        return;
+    }
+
+    QRectF r = rect();
+    r.adjust(0.5, 0.5, -0.5, -0.5);
+    QPainterPath path;
+    path.addRoundedRect(r, kWindowRadius, kWindowRadius);
+    p.fillPath(path, bg);
+}
+
+void ChatDialog::resizeEvent(QResizeEvent *event)
+{
+    QDialog::resizeEvent(event);
+    if (m_titleBar) {
+        m_titleBar->setGeometry(0, 0, width(), kTitleBarHeight);
+    }
+}
+
+void ChatDialog::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton && hitTitleBar(event->pos())) {
+        m_dragging = true;
+        m_dragPos = event->globalPosition().toPoint() - frameGeometry().topLeft();
+        event->accept();
+        return;
+    }
+    QDialog::mousePressEvent(event);
+}
+
+void ChatDialog::mouseMoveEvent(QMouseEvent *event)
+{
+    if (m_dragging && (event->buttons() & Qt::LeftButton)) {
+        move(event->globalPosition().toPoint() - m_dragPos);
+        event->accept();
+        return;
+    }
+    QDialog::mouseMoveEvent(event);
+}
+
+void ChatDialog::mouseReleaseEvent(QMouseEvent *event)
+{
+    m_dragging = false;
+    QDialog::mouseReleaseEvent(event);
+}
+
+void ChatDialog::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton && hitTitleBar(event->pos())) {
+        toggleMaxRestore();
+        event->accept();
+        return;
+    }
+    QDialog::mouseDoubleClickEvent(event);
+}
+
+void ChatDialog::changeEvent(QEvent *event)
+{
+    QDialog::changeEvent(event);
+    if (event->type() == QEvent::WindowStateChange) {
+        updateTitleButtons();
+        updateWindowMask();
+    } else if (event->type() == QEvent::WindowTitleChange) {
+        if (m_titleLabel) {
+            m_titleLabel->setText(windowTitle());
+        }
+    }
+}
+
+bool ChatDialog::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)
+{
+#ifdef Q_OS_WIN
+    if (eventType == "windows_generic_MSG" || eventType == "windows_dispatcher_MSG") {
+        auto *msg = static_cast<MSG *>(message);
+        if (msg->message == WM_NCHITTEST) {
+            if (isMaximized()) {
+                return QDialog::nativeEvent(eventType, message, result);
+            }
+
+            const int kResizeBorder = 6;
+            const int x = GET_X_LPARAM(msg->lParam);
+            const int y = GET_Y_LPARAM(msg->lParam);
+            RECT winRect;
+            GetWindowRect(reinterpret_cast<HWND>(winId()), &winRect);
+
+            const bool onLeft = x >= winRect.left && x < winRect.left + kResizeBorder;
+            const bool onRight = x <= winRect.right && x > winRect.right - kResizeBorder;
+            const bool onTop = y >= winRect.top && y < winRect.top + kResizeBorder;
+            const bool onBottom = y <= winRect.bottom && y > winRect.bottom - kResizeBorder;
+
+            if (onTop && onLeft) {
+                *result = HTTOPLEFT;
+                return true;
+            }
+            if (onTop && onRight) {
+                *result = HTTOPRIGHT;
+                return true;
+            }
+            if (onBottom && onLeft) {
+                *result = HTBOTTOMLEFT;
+                return true;
+            }
+            if (onBottom && onRight) {
+                *result = HTBOTTOMRIGHT;
+                return true;
+            }
+            if (onLeft) {
+                *result = HTLEFT;
+                return true;
+            }
+            if (onRight) {
+                *result = HTRIGHT;
+                return true;
+            }
+            if (onTop) {
+                *result = HTTOP;
+                return true;
+            }
+            if (onBottom) {
+                *result = HTBOTTOM;
+                return true;
+            }
+        }
+    }
+#endif
+    return QDialog::nativeEvent(eventType, message, result);
 }
 
 void ChatDialog::addChatUserList()

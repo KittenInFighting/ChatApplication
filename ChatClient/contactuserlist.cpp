@@ -3,6 +3,8 @@
 #include "conuseritem.h"
 #include "shortscrollbar.h"
 #include <QRandomGenerator>
+#include <QMouseEvent>
+#include <QCursor>
 #include <QTimer>
 
 std::vector<QString>  str ={"hello !00000000000000",
@@ -29,6 +31,7 @@ ContactUserList::ContactUserList(QWidget *parent)
 
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    setSelectionMode(QAbstractItemView::SingleSelection);
 
     // 用自定义短滚动条
     auto *sb = new ShortScrollBar(Qt::Vertical, this);
@@ -107,6 +110,19 @@ ContactUserList::ContactUserList(QWidget *parent)
     //            &ContactUserList::slot_auth_rsp);
 }
 
+void ContactUserList::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton) {
+        QListWidgetItem *item = itemAt(event->pos());
+        m_pressedItem = item;
+        m_pressedItemWasSelected = item ? selectionModel()->isSelected(indexFromItem(item)) : false;
+    } else {
+        m_pressedItem = nullptr;
+        m_pressedItemWasSelected = false;
+    }
+    QListWidget::mousePressEvent(event);
+}
+
 void ContactUserList::ShowRedPoint(bool bshow /*= true*/)
 {
     // _add_friend_item->ShowRedPoint(bshow);
@@ -171,6 +187,7 @@ bool ContactUserList::eventFilter(QObject *watched, QEvent *event)
             this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
         }else if(event->type() == QEvent::Leave){
             this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+            clearHoverItem();
         }
     }
 
@@ -217,11 +234,48 @@ bool ContactUserList::eventFilter(QObject *watched, QEvent *event)
     return QListWidget::eventFilter(watched, event);
 }
 
+void ContactUserList::clearHoverItem()
+{
+    if (!m_hoverItem) return;
+    if (auto *w = itemWidget(m_hoverItem)) {
+        w->setProperty("hover", false);
+        w->style()->unpolish(w);
+        w->style()->polish(w);
+        w->update();
+    }
+    m_hoverItem = nullptr;
+    m_hasLastVpPos = false;
+}
+
 void ContactUserList::slot_item_clicked(QListWidgetItem *item)
 {
+    if (!item) {
+        m_pressedItem = nullptr;
+        m_pressedItemWasSelected = false;
+        return;
+    }
+    if (!(item->flags() & Qt::ItemIsSelectable)) {
+        m_pressedItem = nullptr;
+        m_pressedItemWasSelected = false;
+        return;
+    }
+    if (item == m_pressedItem && m_pressedItemWasSelected) {
+        setCurrentRow(-1);
+        clearSelection();
+        //执行条目取消选中后逻辑
+        m_pressedItem = nullptr;
+        m_pressedItemWasSelected = false;
+        return;
+    }
+    if (item == m_pressedItem && !m_pressedItemWasSelected) {
+        //执行条目选中后逻辑
+    }
+
     QWidget *widget = this->itemWidget(item); // 获取自定义widget对象
     if(!widget){
         qDebug()<< "slot item clicked widget is nullptr";
+        m_pressedItem = nullptr;
+        m_pressedItemWasSelected = false;
         return;
     }
 
@@ -229,6 +283,8 @@ void ContactUserList::slot_item_clicked(QListWidgetItem *item)
     ListItemBase *customItem = qobject_cast<ListItemBase*>(widget);
     if(!customItem){
         qDebug()<< "slot item clicked widget is nullptr";
+        m_pressedItem = nullptr;
+        m_pressedItemWasSelected = false;
         return;
     }
 
@@ -236,6 +292,8 @@ void ContactUserList::slot_item_clicked(QListWidgetItem *item)
     if(itemType == ListItemType::INVALID_ITEM
         || itemType == ListItemType::GROUP_TIP_ITEM){
         qDebug()<< "slot invalid item clicked ";
+        m_pressedItem = nullptr;
+        m_pressedItemWasSelected = false;
         return;
     }
 
@@ -247,8 +305,12 @@ void ContactUserList::slot_item_clicked(QListWidgetItem *item)
         auto user_info = con_item->GetInfo();
         //跳转到好友信息界面
         emit sig_switch_friend_info_page(user_info);
+        m_pressedItem = nullptr;
+        m_pressedItemWasSelected = false;
         return;
     }
+    m_pressedItem = nullptr;
+    m_pressedItemWasSelected = false;
 }
 
 void ContactUserList::smoothScrollTo(int target)

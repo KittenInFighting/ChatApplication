@@ -14,6 +14,7 @@ ChatUserList::ChatUserList(QWidget *parent)
 {
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    setSelectionMode(QAbstractItemView::SingleSelection);
 
     // 用自定义短滚动条
     auto *sb = new ShortScrollBar(Qt::Vertical, this);
@@ -71,7 +72,46 @@ ChatUserList::ChatUserList(QWidget *parent)
                 setSel(cur, true);
             });
 
+    connect(this, &QListWidget::itemClicked, this, [this](QListWidgetItem* item){
+        if (!item) {
+            m_pressedItem = nullptr;
+            m_pressedItemWasSelected = false;
+            return;
+        }
+        if (!(item->flags() & Qt::ItemIsSelectable)) {
+            m_pressedItem = nullptr;
+            m_pressedItemWasSelected = false;
+            return;
+        }
+        if (item == m_pressedItem && m_pressedItemWasSelected) {
+            setCurrentRow(-1);
+            clearSelection();
+            //执行条目取消选中后逻辑
+            m_pressedItem = nullptr;
+            m_pressedItemWasSelected = false;
+            return;
+        }
+        if (item == m_pressedItem && !m_pressedItemWasSelected) {
+            //执行条目选中后逻辑
+        }
+        m_pressedItem = nullptr;
+        m_pressedItemWasSelected = false;
+    });
+
     viewport()->installEventFilter(this);
+}
+
+void ChatUserList::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton) {
+        QListWidgetItem *item = itemAt(event->pos());
+        m_pressedItem = item;
+        m_pressedItemWasSelected = item ? selectionModel()->isSelected(indexFromItem(item)) : false;
+    } else {
+        m_pressedItem = nullptr;
+        m_pressedItemWasSelected = false;
+    }
+    QListWidget::mousePressEvent(event);
 }
 
 void ChatUserList::smoothScrollTo(int target)
@@ -108,6 +148,7 @@ bool ChatUserList::eventFilter(QObject *watched, QEvent *event)
             this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
         }else if(event->type() == QEvent::Leave){
             this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+            clearHoverItem();
         }
     }
 
@@ -152,6 +193,19 @@ bool ChatUserList::eventFilter(QObject *watched, QEvent *event)
     }
 
     return QListWidget::eventFilter(watched, event);
+}
+
+void ChatUserList::clearHoverItem()
+{
+    if (!m_hoverItem) return;
+    if (auto *w = itemWidget(m_hoverItem)) {
+        w->setProperty("hover", false);
+        w->style()->unpolish(w);
+        w->style()->polish(w);
+        w->update();
+    }
+    m_hoverItem = nullptr;
+    m_hasLastVpPos = false;
 }
 void ChatUserList::addChatUserWidget(QWidget *w)
 {
