@@ -72,6 +72,7 @@ void HttpConnection::Start(){
 			}
 
 			boost::ignore_unused(bytes_transferred);
+			std::cout << "开始处理收到的Http请求" << std::endl;
 			self->HandleReq();
 			self->CheckDeadline();
 		}
@@ -82,7 +83,7 @@ void HttpConnection::Start(){
 }
 
 void HttpConnection::PreParseGetParam(){
-	// 提取 URI  
+	// 提取 URI
 	auto uri = _request.target();
 	// 查找查询字符串的开始位置（即 '?' 的位置）  
 	auto query_pos = uri.find('?');
@@ -142,7 +143,7 @@ void HttpConnection::HandleReq(){
 		return;
 	}
 
-	//处理get_varifycode请求 Post请求
+	//处理Post请求
 	if (_request.method() == boost::beast::http::verb::post) {
 		//
 		bool success = LogicalSystem::GetInstance()->HandlePost(_request.target(), shared_from_this());

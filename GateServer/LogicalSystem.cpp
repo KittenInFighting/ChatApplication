@@ -145,17 +145,17 @@ LogicalSystem::LogicalSystem(){
 		auto pwd = src_root["passwd"].asString();
 
 		//先查找redis中email对应的验证码是否合理
-		std::string  varify_code;
-		bool b_get_varify = RedisMgr::GetInstance()->Get(CODEPREFIX + src_root["email"].asString(), varify_code);
+		std::string  verify_code;
+		bool b_get_varify = RedisMgr::GetInstance()->Get(CODEPREFIX + src_root["email"].asString(), verify_code);
 		if (!b_get_varify) {
-			std::cout << " get varify code expired" << std::endl;
+			std::cout << " get verify code expired" << std::endl;
 			root["error"] = ErrorCodes::VerifyExpired;
 			std::string jsonstr = root.toStyledString();
 			boost::beast::ostream(connection->_response.body()) << jsonstr;
 			return true;
 		}
 
-		if (varify_code != src_root["varifycode"].asString()) {
+		if (verify_code != src_root["varifycode"].asString()) {
 			std::cout << " varify code error" << std::endl;
 			root["error"] = ErrorCodes::VerifyCodeErr;
 			std::string jsonstr = root.toStyledString();
@@ -240,6 +240,7 @@ LogicalSystem::LogicalSystem(){
 		root["token"] = reply.token();
 		root["host"] = reply.host();
 		root["port"] = reply.port();
+		std::cout << "login success, chat server is " << reply.host() << ":" << reply.port() << std::endl;
 		std::string jsonstr = root.toStyledString();
 		boost::beast::ostream(connection->_response.body()) << jsonstr;
 		return true;

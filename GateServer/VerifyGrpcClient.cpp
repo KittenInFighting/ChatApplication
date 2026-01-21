@@ -57,18 +57,18 @@ VerifyGrpcClient::VerifyGrpcClient() {
 
 message::GetVerifyRsp VerifyGrpcClient::GetVerifyCode(std::string email) {
 	grpc::ClientContext  context;
-	message::GetVerifyRsp reply;
+	message::GetVerifyRsp response;
 	message::GetVerifyReq request;
 	request.set_email(email);
 	auto stub = _pool->getConnection();
-	grpc::Status status = stub->GetVerifyCode(&context, request, &reply);
+	grpc::Status status = stub->GetVerifyCode(&context, request, &response);
 	if (status.ok()) {
 		_pool->returnConnection(std::move(stub));
-		return reply;
+		return response;
 	}
 	else {
 		_pool->returnConnection(std::move(stub));
-		reply.set_error(ErrorCodes::RPCFailed);
-		return reply;
+		response.set_error(ErrorCodes::RPCFailed);
+		return response;
 	}
 }
