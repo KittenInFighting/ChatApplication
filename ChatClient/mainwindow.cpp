@@ -36,7 +36,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_login_dlg, &LoginDialog::switchchat, this, &MainWindow::SlotSwichChat);
 
     //调试用
-    emit _login_dlg -> switchchat();
+    //emit _login_dlg -> switchchat();
 }
 
 void MainWindow::adaptToPage(QWidget *page)

@@ -26,8 +26,8 @@ static QPixmap makeRoundPixmap(const QPixmap& src, int size)
 }
 
 FindSuccessDlg::FindSuccessDlg(QWidget *parent)
-    : QDialog(parent)
-    , ui(new Ui::FindSuccessDlg)
+    : QDialog(parent),_parent(parent)
+    ,ui(new Ui::FindSuccessDlg)
 {
     ui->setupUi(this);
     //setWindowFlags(windowFlags() | Qt::FramelessWindowHint);

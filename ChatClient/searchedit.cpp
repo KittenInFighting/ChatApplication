@@ -9,3 +9,4 @@ void SearchEdit::SetMaxLength(int maxLen)
 {
     _max_len = maxLen;
 }
+

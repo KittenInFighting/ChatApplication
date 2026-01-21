@@ -8,13 +8,7 @@
 
 class SearchInfo {
 public:
-    SearchInfo(int uid, QString name, QString nick, QString desc, int sex, QString icon)
-        : _uid(uid),
-          _name(name),
-          _nick(nick),
-          _desc(desc),
-          _sex(sex),
-          _icon(icon) {}
+    SearchInfo(int uid, QString name, QString nick, QString desc, int sex, QString icon);
     int _uid;
     QString _name;
     QString _nick;
@@ -26,13 +20,7 @@ public:
 class AddFriendApply {
 public:
     AddFriendApply(int from_uid, QString name, QString desc,
-                   QString icon, QString nick, int sex)
-        : _from_uid(from_uid),
-          _name(name),
-          _desc(desc),
-          _icon(icon),
-          _nick(nick),
-          _sex(sex) {}
+                   QString icon, QString nick, int sex);
     int _from_uid;
     QString _name;
     QString _desc;
@@ -120,16 +108,16 @@ struct FriendInfo {
 };
 
 struct UserInfo {
-    UserInfo(int uid, QString name, QString nick, QString icon, int sex, QString last_msg = "", QString desc=""):
-        _uid(uid),_name(name),_nick(nick),_icon(icon),_sex(sex),_last_msg(last_msg),_desc(desc){}
+    UserInfo(int uid, QString name, QString nick, QString icon, int sex, QString last_msg = ""):
+        _uid(uid),_name(name),_nick(nick),_icon(icon),_sex(sex),_last_msg(last_msg){}
 
     UserInfo(std::shared_ptr<AuthInfo> auth):
         _uid(auth->_uid),_name(auth->_name),_nick(auth->_nick),
-        _icon(auth->_icon),_sex(auth->_sex),_last_msg(""),_desc(""){}
+        _icon(auth->_icon),_sex(auth->_sex),_last_msg(""){}
 
     UserInfo(int uid, QString name, QString icon):
     _uid(uid), _name(name), _icon(icon),_nick(_name),
-    _sex(0),_last_msg(""),_desc(""){
+    _sex(0),_last_msg(""){
 
     }
 
@@ -154,7 +142,6 @@ struct UserInfo {
     QString _nick;
     QString _icon;
     int _sex;
-    QString _desc;
     QString _last_msg;
     std::vector<std::shared_ptr<TextChatData>> _chat_msgs;
 };
@@ -185,6 +172,7 @@ struct TextChatMsg{
     int _from_uid;
     std::vector<std::shared_ptr<TextChatData>> _chat_msgs;
 };
+
 
 #endif
 

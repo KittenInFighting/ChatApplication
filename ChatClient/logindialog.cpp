@@ -244,7 +244,7 @@ void LoginDialog::initHttpHandlers()
         auto user = jsonObj["user"].toString();
         //登录账号密码验证成功，进一步处理
         //QMessageBox::information(this, tr("提示"), tr("登录成功"));
-        //qDebug()<< "user is " << user ;
+        qDebug()<< "user is " << user ;
 
         //发送信号通知tcpMgr发送长链接
         ServerInfo si;
@@ -256,7 +256,7 @@ void LoginDialog::initHttpHandlers()
         {
             qDebug() << "Port:" << si.Port << "\n";
             qDebug() << "Host:" << si.Host << "\n";
-            qDebug() << "Host:" << si.Token << "\n";
+            qDebug() << "Token:" << si.Token << "\n";
             //收到的服务器端口和ip为空必然失败，失败提示
             qDebug()<<"Host or IP is null" << "\n";
             QMessageBox::warning(this, tr("tcp连接失败"), tr("请检查网络"));
@@ -490,10 +490,10 @@ void LoginDialog::slot_tcp_con_finish(bool bsuccess)
         jsonObj["token"] = _token;
 
         QJsonDocument doc(jsonObj);
-        QString jsonString = doc.toJson(QJsonDocument::Indented);
+        QByteArray jsonByte = doc.toJson(QJsonDocument::Compact);
 
         //发送数据给chat server
-        TcpMgr::GetInstance()->sig_send_data(ReqId::ID_CHAT_LOGIN, jsonString);
+        TcpMgr::GetInstance()->sig_send_data(ReqId::ID_CHAT_LOGIN, jsonByte);
 
     }else{
             QMessageBox::warning(this, tr("连接失败"), tr("请检查网络"));

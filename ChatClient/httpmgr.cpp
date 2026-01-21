@@ -11,6 +11,7 @@ HttpMgr::HttpMgr() {
 
 void HttpMgr::PostHttpReq(QUrl url, QJsonObject json, ReqId req_id, Modules mod)
 {
+    qDebug() << "发送http请求"<<"\n";
     QByteArray data = QJsonDocument(json).toJson();
     QNetworkRequest request(url);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
@@ -22,6 +23,7 @@ void HttpMgr::PostHttpReq(QUrl url, QJsonObject json, ReqId req_id, Modules mod)
         if(reply -> error()  != QNetworkReply::NoError){
             qDebug() << reply -> errorString();
             //发送信号通知
+            qDebug() << "发送http请求失败"<<"\n";
             emit self -> sig_http_finish(req_id, "" , ErrorCodes::ERR_NETWORK, mod);
             reply -> deleteLater();
             return;
@@ -30,6 +32,7 @@ void HttpMgr::PostHttpReq(QUrl url, QJsonObject json, ReqId req_id, Modules mod)
         //正常情况
         QString res = reply -> readAll();
         //发送信号通知
+        qDebug() << "收到回包发送http请求信号通知"<<"\n";
         emit self -> sig_http_finish(req_id, res, ErrorCodes::SUCCESS, mod);
         reply -> deleteLater();
         return;
@@ -49,6 +52,7 @@ void HttpMgr::slot_http_finish(ReqId id, QString res, ErrorCodes err, Modules mo
 
     if(mod == Modules::LOGINMOD){
         //发送信号通知指定模块http响应结束
+        qDebug()<<"登录模块http已经响应"<<"\n";
         emit sig_login_mod_finish(id, res, err);
     }
 }

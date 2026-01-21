@@ -43,6 +43,7 @@ SOURCES += \
     tcpmgr.cpp \
     textbubble.cpp \
     timerbtn.cpp \
+    userdata.cpp \
     usermgr.cpp
 
 HEADERS += \

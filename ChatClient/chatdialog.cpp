@@ -4,6 +4,10 @@
 #include "userdata.h"
 #include "chatuserwid.h"
 #include "findsuccessdlg.h"
+#include "global.h"
+#include "tcpmgr.h"
+#include "usermgr.h"
+#include <QMessageBox>
 #include <QString>
 #include <memory>
 #include <QEvent>
@@ -307,6 +311,9 @@ ChatDialog::ChatDialog(QWidget *parent)
             });
 
     this->installEventFilter(this);
+
+    //连接搜索条目
+    connect(TcpMgr::GetInstance().get(), &TcpMgr::sig_user_search, this, &ChatDialog::slot_user_search);
 
     //设置默认选中聊天界面
     ui->side_chat->SetSelected(true);
@@ -755,12 +762,47 @@ void ChatDialog::ShowSearch()
 
 void ChatDialog::on_add_btn_clicked()
 {
-    //搜索处理
-    _find_dlg = std::make_shared<FindSuccessDlg>(this);
-    //暂时设置搜索到的信息
-    auto si = std::make_shared<SearchInfo>(0,"Momiji","Momiji","hello , my friend!",0,"icon");
-    (std::dynamic_pointer_cast<FindSuccessDlg>(_find_dlg))->SetSearchInfo(si);
-    _find_dlg->show();
+    if(ui->search_edit->text().isEmpty()){
+        QMessageBox::information(this, tr("提示"), tr("搜索用户不能为空！！！"));
+        return;
+    }
+    auto uid_str = ui->search_edit->text();
+    QJsonObject jsonObj;
+    jsonObj["uid"] = uid_str;
+
+    QJsonDocument doc(jsonObj);
+    QByteArray jsonData = doc.toJson(QJsonDocument::Compact);
+    emit TcpMgr::GetInstance()->sig_send_data(ReqId::ID_SEARCH_USER_REQ,
+                                              jsonData);
+
     return;
+
+}
+
+void ChatDialog::slot_user_search(std::shared_ptr<SearchInfo> si)
+{
+    if(si == nullptr){
+        QMessageBox::information(this, tr("提示"), tr("该用户不存在！！！"));
+    }else{
+        //如果是自己，暂且先直接返回，以后看逻辑扩充
+        auto self_uid = UserMgr::GetInstance()->GetUid();
+        if (si->_uid == self_uid) {
+            return;
+        }
+        //此处分两种情况，一种是搜到已经是自己的朋友了，一种是未添加好友
+        //查找是否已经是好友
+        bool bExist = UserMgr::GetInstance()->CheckFriendById(si->_uid);
+        if(bExist){
+            //此处处理已经添加的好友，实现页面跳转
+            //发送提示窗口或者直接跳转
+            //emit sig_jump_chat_item(si);
+            QMessageBox::information(this, tr("提示"), tr("已经是好友！！！"));
+            return;
+        }
+        //此处处理添加的好友
+        _find_dlg = std::make_shared<FindSuccessDlg>(this);
+        std::dynamic_pointer_cast<FindSuccessDlg>(_find_dlg)->SetSearchInfo(si);
+        _find_dlg -> show();
+    }
 }
 

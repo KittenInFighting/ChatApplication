@@ -27,10 +27,10 @@ private:
     QMap<ReqId, std::function<void(ReqId id, int len, QByteArray data)>> _handlers;
 public slots:
     void slot_tcp_connect(ServerInfo);//处理连接
-    void slot_send_data(ReqId reqId, QString data);//发送数据
+    void slot_send_data(ReqId reqId, QByteArray dataBytes);//发送数据
 signals:
     void sig_con_success(bool bsuccess);//连接成功信号
-    void sig_send_data(ReqId reqId, QString data);//发送数据信号
+    void sig_send_data(ReqId reqId, QByteArray data);//发送数据信号
     void sig_login_failed(int);//登录失败信号
     void sig_user_search(std::shared_ptr<SearchInfo>);//搜索
     void sig_friend_apply(std::shared_ptr<AddFriendApply>);//收到好友申请

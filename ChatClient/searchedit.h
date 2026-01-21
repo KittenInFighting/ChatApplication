@@ -33,7 +33,6 @@ private:
             this->setText(QString::fromUtf8(byteArray));
         }
     }
-
     int _max_len;
 signals:
     void sig_foucus_out();
