@@ -146,8 +146,8 @@ LogicalSystem::LogicalSystem(){
 
 		//先查找redis中email对应的验证码是否合理
 		std::string  verify_code;
-		bool b_get_varify = RedisMgr::GetInstance()->Get(CODEPREFIX + src_root["email"].asString(), verify_code);
-		if (!b_get_varify) {
+		bool b_get_verify = RedisMgr::GetInstance()->Get(CODEPREFIX + src_root["email"].asString(), verify_code);
+		if (!b_get_verify) {
 			std::cout << " get verify code expired" << std::endl;
 			root["error"] = ErrorCodes::VerifyExpired;
 			std::string jsonstr = root.toStyledString();
@@ -155,8 +155,8 @@ LogicalSystem::LogicalSystem(){
 			return true;
 		}
 
-		if (verify_code != src_root["varifycode"].asString()) {
-			std::cout << " varify code error" << std::endl;
+		if (verify_code != src_root["verifycode"].asString()) {
+			std::cout << " verify code error" << std::endl;
 			root["error"] = ErrorCodes::VerifyCodeErr;
 			std::string jsonstr = root.toStyledString();
 			boost::beast::ostream(connection->_response.body()) << jsonstr;
