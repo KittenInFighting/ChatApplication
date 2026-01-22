@@ -168,17 +168,6 @@ void LogicSystem::LoginHandler(shared_ptr<CSession> session, const short& msg_id
 	}
 
 	auto server_name = ConfigMgr::Inst().GetValue("SelfServer", "Name");
-	//将登录数量增加
-	auto rd_res = RedisMgr::GetInstance()->HGet(LOGIN_COUNT, server_name);
-	int count = 0;
-	if (!rd_res.empty()) {
-		count = std::stoi(rd_res);
-	}
-
-	count++;
-	auto count_str = std::to_string(count);
-	RedisMgr::GetInstance()->HSet(LOGIN_COUNT, server_name, count_str);
-	//session绑定用户uid
 	session->SetUserId(uid);
 	//为用户设置登录ip server的名字
 	std::string  ipkey = USERIPPREFIX + uid_str;

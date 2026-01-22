@@ -3,7 +3,7 @@
 #include "CServer.h"
 
 CSession::CSession(boost::asio::io_context& io_context, CServer* server) :
-	_socket(io_context), _server(server), _b_close(false), _b_head_parse(false){
+	_socket(io_context), _server(server), _b_close(false), _b_head_parse(false), _user_uid(0){
 	boost::uuids::uuid  a_uuid = boost::uuids::random_generator()();
 	_session_id = boost::uuids::to_string(a_uuid);
 	_recv_head_node = std::make_shared<MsgNode>(HEAD_TOTAL_LEN);
