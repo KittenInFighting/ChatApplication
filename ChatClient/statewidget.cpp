@@ -2,7 +2,7 @@
 
 #include <QEnterEvent>
 #include <QMouseEvent>
-#include <QVBoxLayout>
+#include <QGridLayout>
 
 StateWidget::StateWidget(QWidget *parent)
     : QToolButton(parent),
@@ -108,10 +108,10 @@ void StateWidget::AddRedPoint()
     _red_point->setObjectName("red_point");
     _red_point->setAlignment(Qt::AlignCenter);
 
-    auto *layout = new QVBoxLayout(this);
-    layout->setContentsMargins(0, 0, 0, 0);
+    auto *layout = new QGridLayout(this);
+    layout->setContentsMargins(0, 2, 6, 0);
     layout->setSpacing(0);
-    layout->addWidget(_red_point, 0, Qt::AlignCenter);
+    layout->addWidget(_red_point, 0, 0, Qt::AlignTop | Qt::AlignRight);
 
     _red_point->setVisible(false);
 }

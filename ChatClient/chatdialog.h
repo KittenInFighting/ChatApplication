@@ -45,6 +45,7 @@ private slots:
     void on_add_btn_clicked();
     void slot_user_search(std::shared_ptr<SearchInfo> si);
     void slot_find_failed();
+    void slot_friend_apply(std::shared_ptr<AddFriendApply> apply);
 private:
     void initTitleBar();
     void updateWindowMask();

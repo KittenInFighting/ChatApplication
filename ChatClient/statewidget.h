@@ -23,8 +23,7 @@ public:
 
     void SetSelected(bool bselected);
     void AddRedPoint();
-    void ShowRedPoint(bool show=true);
-
+    void ShowRedPoint(bool show);
 protected:
     void paintEvent(QPaintEvent* event) override;
 

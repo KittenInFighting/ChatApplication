@@ -7,11 +7,11 @@ QDialog#LoginDialog, #RegisterDialog{
     );
 }
 QDialog#LoginDialog {
-    background: transparent;   /* 让窗口外部透明 */
+    background: transparent;
 }
 QWidget#card {
-    border-radius: 14px;
-    border: 1px solid rgba(0, 0, 0, 8);   /* 极淡边框，不会像黑线 */
+    border-radius: 10px;
+    border: 1px solid #BABABA;
     background: qlineargradient(
         x1: 0, y1: 0, x2: 0, y2: 1,
         stop: 0    rgb(242, 249, 255),
@@ -203,3 +203,10 @@ QPushButton#add_btn:pressed { background: #CECECE; }
     background: transparent;
 }
 
+#red_point{
+    border-image: url(:/res/red_point.png);
+    min-width: 20px;
+    min-height: 20px;
+    max-width: 20px;
+    max-height: 20px;
+}

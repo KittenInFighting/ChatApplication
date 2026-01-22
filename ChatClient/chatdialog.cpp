@@ -318,6 +318,9 @@ ChatDialog::ChatDialog(QWidget *parent)
     //搜索用户返回失败
     connect(TcpMgr::GetInstance().get(),&TcpMgr::sig_find_failed,this,&ChatDialog::slot_find_failed);
 
+    //处理好友申请
+    connect(TcpMgr::GetInstance().get(), &TcpMgr::sig_friend_apply, this, &ChatDialog::slot_friend_apply);
+
     //设置默认选中聊天界面
     ui->side_chat->SetSelected(true);
     ui->stackedWidget->setCurrentWidget(ui->chat_page);
@@ -719,6 +722,7 @@ void ChatDialog::slot_side_chat()
 void ChatDialog::slot_side_contact()
 {
     qDebug()<< "receive side contact clicked";
+    ui->side_contact->ShowRedPoint(false);
     ClearLabelState(ui->side_contact);
     ui->stackedWidget->setCurrentWidget(ui->friend_apply_page);
     _state = ChatUIMode::ContactMode;
@@ -814,5 +818,20 @@ void ChatDialog::slot_find_failed()
 {
     QMessageBox::information(this, tr("提示"), tr("该用户不存在！！！"));
     return;
+}
+
+void ChatDialog::slot_friend_apply(std::shared_ptr<AddFriendApply> apply)
+{
+    qDebug() << "receive apply friend slot, applyuid is " << apply->_from_uid << " name is "
+             << apply->_name << " desc is " << apply->_desc;
+
+    bool b_already = UserMgr::GetInstance()->AlreadyApply(apply->_from_uid);
+    if(b_already){
+        return;
+    }
+
+    UserMgr::GetInstance()->AddApplyList(std::make_shared<ApplyInfo>(apply));
+    ui->side_contact->ShowRedPoint(true);
+    ui->friend_apply_page->AddNewApply(apply);
 }
 
