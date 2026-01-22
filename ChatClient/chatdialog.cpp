@@ -315,6 +315,9 @@ ChatDialog::ChatDialog(QWidget *parent)
     //连接搜索条目
     connect(TcpMgr::GetInstance().get(), &TcpMgr::sig_user_search, this, &ChatDialog::slot_user_search);
 
+    //搜索用户返回失败
+    connect(TcpMgr::GetInstance().get(),&TcpMgr::sig_find_failed,this,&ChatDialog::slot_find_failed);
+
     //设置默认选中聊天界面
     ui->side_chat->SetSelected(true);
     ui->stackedWidget->setCurrentWidget(ui->chat_page);
@@ -787,6 +790,7 @@ void ChatDialog::slot_user_search(std::shared_ptr<SearchInfo> si)
         //如果是自己，暂且先直接返回，以后看逻辑扩充
         auto self_uid = UserMgr::GetInstance()->GetUid();
         if (si->_uid == self_uid) {
+            QMessageBox::information(this, tr("提示"), tr("不能添加自己！！！"));
             return;
         }
         //此处分两种情况，一种是搜到已经是自己的朋友了，一种是未添加好友
@@ -804,5 +808,11 @@ void ChatDialog::slot_user_search(std::shared_ptr<SearchInfo> si)
         std::dynamic_pointer_cast<FindSuccessDlg>(_find_dlg)->SetSearchInfo(si);
         _find_dlg -> show();
     }
+}
+
+void ChatDialog::slot_find_failed()
+{
+    QMessageBox::information(this, tr("提示"), tr("该用户不存在！！！"));
+    return;
 }
 

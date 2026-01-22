@@ -35,6 +35,8 @@ MainWindow::MainWindow(QWidget *parent)
     //登录确认连接tcp服务器，切换界面
     connect(_login_dlg, &LoginDialog::switchchat, this, &MainWindow::SlotSwichChat);
 
+    //处理聊天窗口的服务器断联
+    connect(TcpMgr::GetInstance().get(), &TcpMgr::sig_tcp_disconnect, this, &MainWindow::SlotTcpDisconnect);
     //调试用
     //emit _login_dlg -> switchchat();
 }
@@ -59,6 +61,23 @@ void MainWindow::SlotSwichChat()
     }
     _chat_dlg -> adjustSize();
     _chat_dlg -> show();
+}
+
+void MainWindow::SlotTcpDisconnect()
+{
+    QMessageBox::warning(this, tr("网络连接断开"), tr("请检查网络稍后重试"));
+    if(_chat_dlg){
+        _chat_dlg->close(); // 触发析构
+    }
+    if (!_login_dlg) {//返回登录界面
+        _login_dlg = new LoginDialog();
+        _login_dlg->setAttribute(Qt::WA_DeleteOnClose); //
+        connect(_login_dlg, &QObject::destroyed, this, [this]() {
+            _login_dlg = nullptr; // 避免悬空指针
+        });
+    }
+    _login_dlg -> adjustSize();
+    _login_dlg -> show();
 }
 MainWindow::~MainWindow()
 {

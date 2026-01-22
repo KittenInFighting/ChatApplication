@@ -74,7 +74,8 @@ LoginDialog::LoginDialog(QWidget *parent)
     //连接tcp管理者发出的连接成功信号
     connect(TcpMgr::GetInstance().get(), &TcpMgr::sig_con_success, this, &LoginDialog::slot_tcp_con_finish);
 
-
+    //登录失败
+    connect(TcpMgr::GetInstance().get(),&TcpMgr::sig_find_failed,this,&LoginDialog::slot_login_failed);
 }
 
 LoginDialog::~LoginDialog()
@@ -238,7 +239,7 @@ void LoginDialog::initHttpHandlers()
         int error = jsonObj["error"].toInt();
         if(error != ErrorCodes::SUCCESS){
            // 添加错误处理,可考虑对齐服务端错误代码，提示具体错误，但不能提示具体账号或密码错误
-            QMessageBox::warning(this, tr("登录失败"), tr("参数错误"));
+            QMessageBox::warning(this, tr("登录失败"), tr("请检查账号或密码"));
             return;
         }
         auto user = jsonObj["user"].toString();
@@ -499,6 +500,13 @@ void LoginDialog::slot_tcp_con_finish(bool bsuccess)
             QMessageBox::warning(this, tr("连接失败"), tr("请检查网络"));
     }
 
+}
+
+void LoginDialog::slot_login_failed()
+{
+    //多加一道登录失败的保险
+    QMessageBox::warning(this, tr("登录失败"), tr("请检查账号或密码"));
+    return;
 }
 
 

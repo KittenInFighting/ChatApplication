@@ -53,6 +53,7 @@ public slots:
     void slot_forget_pwd();//发送信号给mainwindow切换界面
     void slot_login_mod_finish(ReqId id, QString res, ErrorCodes err);//处理短链接的login_mod
     void slot_tcp_con_finish(bool bsuccess);//长连接成功开始处理
+    void slot_login_failed();
 private slots:
     void on_signIn_pushButton_clicked();
 };

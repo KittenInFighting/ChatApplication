@@ -63,6 +63,7 @@ TcpMgr::TcpMgr():_host(""),_port(0),_b_recv_pending(false),_message_id(0),_messa
     // 处理连接断开
     QObject::connect(&_socket, &QTcpSocket::disconnected, [&]() {
         qDebug() << "Disconnected from server.";
+        emit sig_tcp_disconnect();
     });
 
     //连接发送信号，开始发送数据
@@ -93,14 +94,14 @@ void TcpMgr::initHandlers()
         if(!jsonObj.contains("error")){
             int err = ErrorCodes::ERR_JSON;
             qDebug() << "Login Failed, err is Json Parse Err" << err ;
-            emit sig_login_failed(err);//登录失败
+            emit sig_login_failed();//登录失败
             return;
         }
 
         int err = jsonObj["error"].toInt();
         if(err != ErrorCodes::SUCCESS){
             qDebug() << "Login Failed, err is " << err ;
-            emit sig_login_failed(err);
+            emit sig_login_failed();
             return;
         }
 
@@ -132,15 +133,15 @@ void TcpMgr::initHandlers()
 
         if(!jsonObj.contains("error")){
             int err = ErrorCodes::ERR_JSON;
-            qDebug() << "Login Failed, err is Json Parse Err" << err ;
-            emit sig_login_failed(err);
+            qDebug() << "Find Failed, err is Json Parse Err" << err ;
+            emit sig_find_failed();
             return;
         }
 
         int err = jsonObj["error"].toInt();
         if(err != ErrorCodes::SUCCESS){
-            qDebug() << "Login Failed, err is " << err ;
-            emit sig_login_failed(err);
+            qDebug() << "Find Failed, err is " << err ;
+            emit sig_find_failed();
             return;
         }
 
