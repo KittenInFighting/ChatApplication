@@ -27,6 +27,8 @@ public:
     explicit ChatDialog(QWidget *parent = nullptr);
     ~ChatDialog();
     void CloseFindDlg();
+    void RefreshApplyRedPoint();
+
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
     void paintEvent(QPaintEvent *event) override;

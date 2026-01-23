@@ -61,6 +61,8 @@ void MainWindow::SlotSwichChat()
     }
     _chat_dlg -> adjustSize();
     _chat_dlg -> show();
+    _chat_dlg->RefreshApplyRedPoint();
+
 }
 
 void MainWindow::SlotTcpDisconnect()

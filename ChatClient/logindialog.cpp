@@ -74,6 +74,9 @@ LoginDialog::LoginDialog(QWidget *parent)
     //连接tcp管理者发出的连接成功信号
     connect(TcpMgr::GetInstance().get(), &TcpMgr::sig_con_success, this, &LoginDialog::slot_tcp_con_finish);
 
+    //切换进聊天窗口信号
+    connect(TcpMgr::GetInstance().get(), &TcpMgr::sig_chat_login_ok,this, &LoginDialog::switchchat);
+
     //登录失败
     connect(TcpMgr::GetInstance().get(),&TcpMgr::sig_find_failed,this,&LoginDialog::slot_login_failed);
 }
@@ -484,8 +487,8 @@ void LoginDialog::slot_login_mod_finish(ReqId id, QString res, ErrorCodes err)
 void LoginDialog::slot_tcp_con_finish(bool bsuccess)
 {
     if(bsuccess){
-        QMessageBox::information(this, tr("提示"), tr("登录成功"));
-        emit switchchat();//切换进聊天窗口信号
+        //QMessageBox::information(this, tr("提示"), tr("登录成功"));
+
         QJsonObject jsonObj;
         jsonObj["uid"] = _uid;
         jsonObj["token"] = _token;

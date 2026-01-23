@@ -38,6 +38,8 @@ signals:
     void sig_add_auth_friend(std::shared_ptr<AuthInfo>);//对方同意好友申请，认证到好友
     void sig_auth_rsp(std::shared_ptr<AuthRsp>);//同意对方的好友申请
     void sig_tcp_disconnect();//tcp连接断开
+    void sig_chat_login_ok();
+
 };
 
 

@@ -835,3 +835,8 @@ void ChatDialog::slot_friend_apply(std::shared_ptr<AddFriendApply> apply)
     ui->friend_apply_page->AddNewApply(apply);
 }
 
+void ChatDialog::RefreshApplyRedPoint()
+{
+    const bool has_apply = !UserMgr::GetInstance()->GetApplyList().empty();
+    ui->side_contact->ShowRedPoint(has_apply);
+}
