@@ -4,6 +4,7 @@
 #include "httpmgr.h"
 #include <QMouseEvent>
 #include <QRegularExpression>
+#include <QRandomGenerator>
 
 RegisterDialog::RegisterDialog(QWidget *parent)
     : QDialog(parent)
@@ -266,6 +267,13 @@ void RegisterDialog::on_register_pushButton_clicked()
     json_obj["user"] = ui->count_lineEdit->text();
     json_obj["email"] = ui->email_lineEdit->text();
     json_obj["passwd"] = ui->pwd_lineEdit->text();
+    json_obj["sex"] = 0;
+
+    int randomValue = QRandomGenerator::global()->bounded(100); // 生成0到99之间的随机整数
+    int head_i = randomValue % heads.size();
+
+    json_obj["icon"] = heads[head_i];
+    json_obj["nick"] = ui->count_lineEdit->text();
     json_obj["verifycode"] = ui->code_lineEdit->text();
     HttpMgr::GetInstance()->PostHttpReq(QUrl(gate_url_prefix+"/user_register"),
                                         json_obj, ReqId::ID_REG_USER,Modules::REGISTERMOD);

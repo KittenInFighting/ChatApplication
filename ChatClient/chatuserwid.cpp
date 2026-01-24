@@ -37,7 +37,8 @@ void ChatUserWid::updateMsgElide()
     int maxW = ui->user_chat_lab->contentsRect().width();
 
     QFontMetrics fm(ui->user_chat_lab->font());
-    ui->user_chat_lab->setText(fm.elidedText(_msg, Qt::ElideRight, maxW));
+    const QString msg = _user_info ? _user_info->_last_msg : _msg;
+    ui->user_chat_lab->setText(fm.elidedText(msg, Qt::ElideRight, maxW));
 }
 
 void ChatUserWid::updateNameElide()
@@ -49,7 +50,8 @@ void ChatUserWid::updateNameElide()
     //if (maxW <= 0) maxW = 85;
 
     QFontMetrics fm(ui->user_name_lab->font());
-    ui->user_name_lab->setText(fm.elidedText(_name, Qt::ElideRight, maxW));
+    const QString name = _user_info ? _user_info->_name : _name;
+    ui->user_name_lab->setText(fm.elidedText(name, Qt::ElideRight, maxW));
 }
 void ChatUserWid::resizeEvent(QResizeEvent* e)
 {
@@ -124,4 +126,32 @@ void ChatUserWid::SetInfo(QString name, QString head, QString msg,QString time)
 
     updateMsgElide();
     updateNameElide();
+}
+
+void ChatUserWid::SetInfo(std::shared_ptr<UserInfo> user_info)
+{
+    _user_info = user_info;
+    // 加载图片
+    QPixmap pixmap(_user_info->_icon);
+
+    // 设置图片自动缩放
+    ui->icon_lab->setPixmap(pixmap.scaled(ui->icon_lab->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    ui->icon_lab->setScaledContents(true);
+    qDebug()<<"_user_info->name = "<<_user_info->_name;
+    ui->user_name_lab->setText(_user_info->_name);
+    ui->user_chat_lab->setText(_user_info->_last_msg);
+}
+
+void ChatUserWid::SetInfo(std::shared_ptr<FriendInfo> friend_info)
+{
+    _user_info = std::make_shared<UserInfo>(friend_info);
+    // 加载图片
+    QPixmap pixmap(_user_info->_icon);
+
+    // 设置图片自动缩放
+    ui->icon_lab->setPixmap(pixmap.scaled(ui->icon_lab->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    ui->icon_lab->setScaledContents(true);
+
+    ui->user_name_lab->setText(_user_info->_name);
+    ui->user_chat_lab->setText(_user_info->_last_msg);
 }

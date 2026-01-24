@@ -97,6 +97,42 @@ enum ClickLbState{
     Selected = 1
 };
 
+const std::vector<QString>  strs ={"hello !00000000000000",
+                             "nice to meet u0000000000000",
+                             "Ohiyo0000000000000000",
+                             "Dear00000000000000",
+                             "My Honey00000000000000",
+                             "hello !",
+                             "nice to meet u",
+                             "Ohiyo",
+                             "My Honey"
+                             "Dear"};
+
+const std::vector<QString> heads = {
+    ":/res/1.jpg",
+};
+
+const std::vector<QString> names = {
+    "Mihariooooooooo",
+    "Mahiro0000000000",
+    "Asahi00000000000",
+    "Momiji000000000",
+    "Kade00000000000",
+    "Mihari",
+    "Mahiro"
+    "Asahi"
+    "Momiji"
+    "Kade"
+};
+
+const std::vector<QString> times = {
+    "2025/06/08",
+    "9:30",
+    "8:00",
+    "7:30",
+    "13:00",
+};
+
 //申请好友标签输入框最低长度
 const int MIN_APPLY_LABEL_ED_LEN = 40;
 

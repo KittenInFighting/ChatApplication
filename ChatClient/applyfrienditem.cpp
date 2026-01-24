@@ -127,3 +127,5 @@ void ApplyFriendItem::ShowAddBtn(bool bshow)
 int ApplyFriendItem::GetUid() {
     return _apply_info->_uid;
 }
+
+

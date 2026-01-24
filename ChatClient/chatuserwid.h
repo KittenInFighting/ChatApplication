@@ -2,6 +2,7 @@
 #define CHATUSERWID_H
 
 #include "listitembase.h"
+#include "userdata.h"
 #include <QWidget>
 
 namespace Ui {
@@ -20,6 +21,9 @@ public:
     }
 
     void SetInfo(QString name, QString head, QString msg, QString time);
+    void SetInfo(std::shared_ptr<UserInfo> user_info);
+    void SetInfo(std::shared_ptr<FriendInfo> friend_info);
+
 protected:
     void resizeEvent(QResizeEvent* e) override;
 private:
@@ -30,6 +34,7 @@ private:
     QString _head;
     QString _msg;
     QString _time;
+    std::shared_ptr<UserInfo> _user_info;
 };
 
 #endif // CHATUSERWID_H

@@ -7,6 +7,7 @@
 #include <QDialog>
 #include <QPoint>
 #include <QPushButton>
+#include <QListWidgetItem>
 
 namespace Ui {
 class ChatDialog;
@@ -48,6 +49,8 @@ private slots:
     void slot_user_search(std::shared_ptr<SearchInfo> si);
     void slot_find_failed();
     void slot_friend_apply(std::shared_ptr<AddFriendApply> apply);
+    void slot_auth_rsp(std::shared_ptr<AuthRsp> auth_rsp);
+    void slot_add_auth_friend(std::shared_ptr<AuthInfo> auth_info);
 private:
     void initTitleBar();
     void updateWindowMask();
@@ -58,7 +61,7 @@ private:
     void ClearLabelState(StateWidget *lb);
     void AddLBGroup(StateWidget *lb);
     void ShowSearch();
-
+    QMap<int, QListWidgetItem*> _chat_items_added;
     QWidget *m_titleBar = nullptr;
     QLabel *m_titleLabel = nullptr;
     QToolButton *m_minBtn = nullptr;

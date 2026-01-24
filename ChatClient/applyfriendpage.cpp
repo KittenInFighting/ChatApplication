@@ -7,27 +7,11 @@
 #include <QRandomGenerator>
 #include "applyfrienditem.h"
 //#include "authenfriend.h"
-#include "applyfriend.h"
+#include "global.h"
 #include"applyfriendlist.h"
 #include "tcpmgr.h"
 #include "usermgr.h"
 
-std::vector<QString> head_rand = {
-    ":/res/1.jpg",
-};
-std::vector<QString>  str_rand ={"留言:我是Momiji",
-                             "留言:我是Asahi",
-                             "留言:我是Kade",
-                             "留言:我是Mihari",
-                             "留言:我是Mahiro"};
-
-std::vector<QString> name_rand = {
-    "Mihariooooooooo",
-    "Mahiro0000000000",
-    "Asahi00000000000",
-    "Momiji000000000",
-    "Kade00000000000",
-};
 ApplyFriendPage::ApplyFriendPage(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::ApplyFriendPage)
@@ -60,10 +44,10 @@ void ApplyFriendPage::AddNewApply(std::shared_ptr<AddFriendApply> apply)
 {
     //先模拟头像随机，以后头像资源增加资源服务器后再显示
     int randomValue = QRandomGenerator::global()->bounded(100); // 生成0到99之间的随机整数
-    int head_i = randomValue % head_rand.size();
+    int head_i = randomValue % heads.size();
     auto* apply_item = new ApplyFriendItem();
     auto apply_info = std::make_shared<ApplyInfo>(apply->_from_uid,
-                                                  apply->_name, apply->_desc,head_rand[head_i], apply->_name, 0, 0);
+                                                  apply->_name, apply->_desc,heads[head_i], apply->_name, 0, 0);
     apply_item->SetInfo( apply_info);
     QListWidgetItem* item = new QListWidgetItem;
     //qDebug()<<"chat_user_wid sizeHint is " << chat_user_wid->sizeHint();
@@ -97,9 +81,9 @@ void ApplyFriendPage::loadApplyList()
     auto apply_list = UserMgr::GetInstance()->GetApplyList();
     for(auto &apply: apply_list){
         int randomValue = QRandomGenerator::global()->bounded(100); // 生成0到99之间的随机整数
-        int head_i = randomValue % head_rand.size();
+        int head_i = randomValue % heads.size();
         auto* apply_item = new ApplyFriendItem();
-        apply->SetIcon(head_rand[head_i]);
+        apply->SetIcon(heads[head_i]);
         apply_item->SetInfo(apply);
         QListWidgetItem* item = new QListWidgetItem;
         //qDebug()<<"chat_user_wid sizeHint is " << chat_user_wid->sizeHint();
@@ -128,13 +112,13 @@ void ApplyFriendPage::loadApplyList()
     // 模拟假数据，创建QListWidgetItem，并设置自定义的widget
     for(int i = 0; i < 13; i++){
         int randomValue = QRandomGenerator::global()->bounded(100); // 生成0到99之间的随机整数
-        int str_i = randomValue%str_rand.size();
-        int head_i = randomValue%head_rand.size();
-        int name_i = randomValue%name_rand.size();
+        int str_i = randomValue%strs.size();
+        int head_i = randomValue%heads.size();
+        int name_i = randomValue%names.size();
 
         auto *apply_item = new ApplyFriendItem();
-        auto apply = std::make_shared<ApplyInfo>(0, name_rand[name_i], str_rand[str_i],
-                                                 head_rand[head_i], name_rand[name_i], 0, 1);
+        auto apply = std::make_shared<ApplyInfo>(0, names[name_i], strs[str_i],
+                                                 heads[head_i], names[name_i], 0, 1);
         apply_item->SetInfo(apply);
         QListWidgetItem *item = new QListWidgetItem;
         //qDebug()<<"chat_user_wid sizeHint is " << chat_user_wid->sizeHint();
