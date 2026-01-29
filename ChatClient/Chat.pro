@@ -26,6 +26,7 @@ SOURCES += \
     conuseritem.cpp \
     customizeedit.cpp \
     findsuccessdlg.cpp \
+    friendinfopage.cpp \
     global.cpp \
     grouptipitem.cpp \
     httpmgr.cpp \
@@ -45,7 +46,8 @@ SOURCES += \
     textbubble.cpp \
     timerbtn.cpp \
     userdata.cpp \
-    usermgr.cpp
+    usermgr.cpp \
+    whitepage.cpp
 
 HEADERS += \
     addbtn.h \
@@ -66,6 +68,7 @@ HEADERS += \
     conuseritem.h \
     customizeedit.h \
     findsuccessdlg.h \
+    friendinfopage.h \
     global.h \
     grouptipitem.h \
     httpmgr.h \
@@ -85,7 +88,8 @@ HEADERS += \
     textbubble.h \
     timerbtn.h \
     userdata.h \
-    usermgr.h
+    usermgr.h \
+    whitepage.h
 
 FORMS += \
     applyfriend.ui \
@@ -97,11 +101,13 @@ FORMS += \
     chatuserwid.ui \
     conuseritem.ui \
     findsuccessdlg.ui \
+    friendinfopage.ui \
     grouptipitem.ui \
     logindialog.ui \
     mainwindow.ui \
     registerdialog.ui \
-    resetdialog.ui
+    resetdialog.ui \
+    whitepage.ui
 RC_ICONS= Main.ico
 DESTDIR = ./bin
 # Default rules for deployment.

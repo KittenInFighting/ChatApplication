@@ -13,7 +13,7 @@ class ChatUserList: public QListWidget
     Q_OBJECT
 public:
     ChatUserList(QWidget *parent = nullptr);
-    void addChatUserWidget(QWidget *w);   //ChatUserWid 进来
+    void addChatUserWidget(QWidget *w,QListWidgetItem *item);   //ChatUserWid 进来
     void refreshScrollRange();
     void updateHoverItemAt(const QPoint& viewportPos);
 protected:
@@ -32,8 +32,11 @@ private:
     int m_targetValue = 0;
     QPoint m_lastVpPos;
     bool m_hasLastVpPos = false;
+    bool _load_pending;
 signals:
     void sig_loading_chat_user();
+    void sig_item_clicked(QListWidgetItem* item);
+    void sig_item_cancel();
 };
 
 

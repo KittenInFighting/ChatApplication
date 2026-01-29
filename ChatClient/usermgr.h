@@ -25,6 +25,8 @@ public:
     std::vector<std::shared_ptr<ApplyInfo>> GetApplyList();
     void AddApplyList(std::shared_ptr<ApplyInfo> app);
     bool AlreadyApply(int uid);
+    bool UpdateApplyStatus(int uid, int status);
+    bool HasPendingApply() const;
     std::vector<std::shared_ptr<FriendInfo>> GetChatListPerPage();
     bool IsLoadChatFin();
     void UpdateChatLoadedCount();

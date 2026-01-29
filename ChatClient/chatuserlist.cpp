@@ -1,5 +1,6 @@
 #include "ChatUserList.h"
 #include "shortscrollbar.h"
+#include "usermgr.h"
 #include <QFile>
 #include <QScrollBar>
 #include <QWheelEvent>
@@ -10,7 +11,7 @@
 #include <QMouseEvent>
 #include <QTimer>
 ChatUserList::ChatUserList(QWidget *parent)
-    : QListWidget(parent)
+    : QListWidget(parent), _load_pending(false)
 {
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -87,12 +88,14 @@ ChatUserList::ChatUserList(QWidget *parent)
             setCurrentRow(-1);
             clearSelection();
             //执行条目取消选中后逻辑
+            emit sig_item_cancel();
             m_pressedItem = nullptr;
             m_pressedItemWasSelected = false;
             return;
         }
         if (item == m_pressedItem && !m_pressedItemWasSelected) {
             //执行条目选中后逻辑
+            emit sig_item_clicked(item);
         }
         m_pressedItem = nullptr;
         m_pressedItemWasSelected = false;
@@ -180,7 +183,26 @@ bool ChatUserList::eventFilter(QObject *watched, QEvent *event)
          // 到底加载更多
         if (m_targetValue >= sb->maximum()) {
             //加载更多用户处理
-             emit sig_loading_chat_user();
+             //emit sig_loading_chat_user();
+
+            auto b_loaded = UserMgr::GetInstance()->IsLoadChatFin();
+            if(b_loaded){
+                return true;
+            }
+
+            if(_load_pending){
+                return true;
+            }
+            // 滚动到底部，加载新的联系人
+            qDebug()<<"load more chat user";
+            _load_pending = true;
+
+            QTimer::singleShot(100, [this](){
+                _load_pending = false;
+                QCoreApplication::quit(); // 完成后退出应用程序
+            });
+            //发送信号通知聊天界面加载更多聊天内容
+            emit sig_loading_chat_user();
         }
 
         return true;
@@ -207,14 +229,14 @@ void ChatUserList::clearHoverItem()
     m_hoverItem = nullptr;
     m_hasLastVpPos = false;
 }
-void ChatUserList::addChatUserWidget(QWidget *w)
+void ChatUserList::addChatUserWidget(QWidget *w,QListWidgetItem *item)
 {
     //  计算widget的布局
     w->setParent(nullptr);
     w->updateGeometry();
     w->setAttribute(Qt::WA_TransparentForMouseEvents, true);
 
-    auto *item = new QListWidgetItem(this);
+    //auto *item = new QListWidgetItem(this);
 
     // 强制用 widget 的 sizeHint 当 item 高度
     const int h = w->sizeHint().height();

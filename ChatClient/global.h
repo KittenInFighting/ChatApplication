@@ -137,5 +137,5 @@ const std::vector<QString> times = {
 const int MIN_APPLY_LABEL_ED_LEN = 40;
 
 extern QString gate_url_prefix;
-const int CHAT_COUNT_PER_PAGE = 13;
+const int CHAT_COUNT_PER_PAGE = 10;
 #endif // GLOBAL_H

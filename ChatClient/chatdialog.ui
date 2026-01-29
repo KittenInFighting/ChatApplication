@@ -466,7 +466,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>3</number>
         </property>
         <widget class="ChatPage" name="chat_page">
          <property name="minimumSize">
@@ -484,6 +484,8 @@
           </size>
          </property>
         </widget>
+        <widget class="FriendInfoPage" name="friend_info_page"/>
+        <widget class="WhitePage" name="white_page"/>
        </widget>
       </item>
      </layout>
@@ -528,6 +530,18 @@
    <class>ApplyFriendPage</class>
    <extends>QWidget</extends>
    <header>applyfriendpage.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>FriendInfoPage</class>
+   <extends>QWidget</extends>
+   <header location="global">friendinfopage.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>WhitePage</class>
+   <extends>QWidget</extends>
+   <header>whitepage.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

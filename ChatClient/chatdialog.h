@@ -29,7 +29,7 @@ public:
     ~ChatDialog();
     void CloseFindDlg();
     void RefreshApplyRedPoint();
-
+    void UpdateChatMsg(std::vector<std::shared_ptr<TextChatData>> msgdata);
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
@@ -51,6 +51,16 @@ private slots:
     void slot_friend_apply(std::shared_ptr<AddFriendApply> apply);
     void slot_auth_rsp(std::shared_ptr<AuthRsp> auth_rsp);
     void slot_add_auth_friend(std::shared_ptr<AuthInfo> auth_info);
+    void slot_jump_chat_item(std::shared_ptr<SearchInfo> si);
+    void slot_loading_chat_user();//加载聊天列表
+    void slot_loading_contact_user();//加载好友列表
+    void slot_friend_info_page(std::shared_ptr<UserInfo> user_info);//好友信息界面
+    void slot_switch_apply_friend_page();
+    void slot_jump_chat_item_from_infopage(std::shared_ptr<UserInfo> user_info);
+    void slot_chat_item_clicked(QListWidgetItem *item);
+    void slot_chat_item_cancel();
+    void slot_text_chat_msg(std::shared_ptr<TextChatMsg> msg);
+    void slot_append_send_chat_msg(std::shared_ptr<TextChatData> msgdata);
 private:
     void initTitleBar();
     void updateWindowMask();
@@ -61,6 +71,10 @@ private:
     void ClearLabelState(StateWidget *lb);
     void AddLBGroup(StateWidget *lb);
     void ShowSearch();
+    void SetSelectChatItem(int uid = 0);
+    void SetSelectChatPage(int uid = 0);
+    void loadMoreChatUser();//加载聊天列表
+    void loadMoreConUser();//加载联系人列表
     QMap<int, QListWidgetItem*> _chat_items_added;
     QWidget *m_titleBar = nullptr;
     QLabel *m_titleLabel = nullptr;
@@ -76,6 +90,11 @@ private:
     bool _b_loading;
     QList<StateWidget*> _lb_list;
     std::shared_ptr<QDialog> _find_dlg;
+    int _cur_chat_uid;
+    bool _has_chat_context = false;
+    QWidget* _last_widget;
+signals:
+    void sig_jump_chat_item(std::shared_ptr<SearchInfo> si);
 };
 
 #endif // CHATDIALOG_H

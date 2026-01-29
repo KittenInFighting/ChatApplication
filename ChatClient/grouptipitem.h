@@ -17,9 +17,14 @@ public:
     ~GroupTipItem();
     QSize sizeHint() const override;
     void SetGroupTip(QString str);
+private slots:
+    void on_pushButton_clicked();
+
 private:
     QString _tip;
     Ui::GroupTipItem *ui;
+signals:
+    void sig_switch_apply_friend_page();
 };
 
 #endif // GROUPTIPITEM_H

@@ -116,7 +116,7 @@ struct UserInfo {
         _icon(auth->_icon),_sex(auth->_sex),_last_msg(""){}
 
     UserInfo(int uid, QString name, QString icon):
-    _uid(uid), _name(name), _icon(icon),_nick(_name),
+    _uid(uid), _name(name),_nick(name), _icon(icon),
     _sex(0),_last_msg(""){
 
     }

@@ -94,6 +94,28 @@ bool UserMgr::AlreadyApply(int uid)
     return false;
 }
 
+bool UserMgr::UpdateApplyStatus(int uid, int status)
+{
+    bool updated = false;
+    for (auto &apply : _apply_list) {
+        if (apply && apply->_uid == uid) {
+            apply->_status = status;
+            updated = true;
+        }
+    }
+    return updated;
+}
+
+bool UserMgr::HasPendingApply() const
+{
+    for (const auto &apply : _apply_list) {
+        if (apply && apply->_status == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
 std::vector<std::shared_ptr<FriendInfo>> UserMgr::GetChatListPerPage() {
 
     std::vector<std::shared_ptr<FriendInfo>> friend_list;

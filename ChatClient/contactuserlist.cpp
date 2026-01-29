@@ -9,7 +9,7 @@
 #include <QCursor>
 #include <QTimer>
 
-ContactUserList::ContactUserList(QWidget *parent)
+ContactUserList::ContactUserList(QWidget *parent):_load_pending(false)
 {
     Q_UNUSED(parent);
 
@@ -92,6 +92,7 @@ ContactUserList::ContactUserList(QWidget *parent)
        //链接自己点击同意认证后界面刷新
     connect(TcpMgr::GetInstance().get(), &TcpMgr::sig_auth_rsp,this,
                &ContactUserList::slot_auth_rsp);
+
 }
 
 void ContactUserList::mousePressEvent(QMouseEvent *event)
@@ -115,15 +116,33 @@ void ContactUserList::ShowRedPoint(bool bshow /*= true*/)
 void ContactUserList::addContactUserList()
 {
     auto * groupCon = new GroupTipItem();
-    groupCon->SetGroupTip(tr("好友"));
+    groupCon->SetGroupTip(tr("好友通知"));
     _groupitem = new QListWidgetItem;
     _groupitem->setSizeHint(groupCon->sizeHint());
     this->addItem(_groupitem);
     this->setItemWidget(_groupitem, groupCon);
     _groupitem->setFlags(_groupitem->flags() & ~Qt::ItemIsSelectable);
 
+    //连接item按钮的点击事件
+    connect(groupCon, &GroupTipItem::sig_switch_apply_friend_page,
+            this, &ContactUserList::sig_switch_apply_friend_page);
 
-    // 创建QListWidgetItem，并设置自定义的widget
+    //加载后端发送过来的好友列表
+    auto con_list = UserMgr::GetInstance()->GetConListPerPage();
+    for(auto & con_ele : con_list){
+        auto *con_user_wid = new ConUserItem();
+        con_user_wid->SetInfo(con_ele->_uid,con_ele->_name, con_ele->_icon);
+        QListWidgetItem *item = new QListWidgetItem;
+        //qDebug()<<"chat_user_wid sizeHint is " << chat_user_wid->sizeHint();
+        item->setSizeHint(con_user_wid->sizeHint());
+        this->addItem(item);
+        this->setItemWidget(item, con_user_wid);
+    }
+
+    UserMgr::GetInstance()->UpdateContactLoadedCount();
+
+
+    // 模拟创建QListWidgetItem，并设置自定义的widget
     for(int i = 0; i < 13; i++){
         int randomValue = QRandomGenerator::global()->bounded(100); // 生成0到99之间的随机整数
         int head_i = randomValue%heads.size();
@@ -203,6 +222,26 @@ bool ContactUserList::eventFilter(QObject *watched, QEvent *event)
         // 到底加载更多
         if (m_targetValue >= sb->maximum()) {
             //加载更多用户处理
+            //emit sig_loading_contact_user();
+
+            auto b_loaded = UserMgr::GetInstance()->IsLoadConFin();
+            if(b_loaded){
+                return true;
+            }
+
+            if(_load_pending){
+                return true;
+            }
+
+            _load_pending = true;
+
+            QTimer::singleShot(100, [this](){
+                _load_pending = false;
+                QCoreApplication::quit(); // 完成后退出应用程序
+            });
+            // 滚动到底部，加载新的联系人
+            qDebug()<<"load more contact user";
+            //发送信号通知聊天界面加载更多聊天内容
             emit sig_loading_contact_user();
         }
 
@@ -253,38 +292,24 @@ void ContactUserList::slot_item_clicked(QListWidgetItem *item)
     }
     if (item == m_pressedItem && !m_pressedItemWasSelected) {
         //执行条目选中后逻辑
-    }
-
-    QWidget *widget = this->itemWidget(item); // 获取自定义widget对象
-    if(!widget){
-        qDebug()<< "slot item clicked widget is nullptr";
-        m_pressedItem = nullptr;
-        m_pressedItemWasSelected = false;
-        return;
-    }
-
-    // 对自定义widget进行操作， 将item 转化为基类ListItemBase
-    ListItemBase *customItem = qobject_cast<ListItemBase*>(widget);
-    if(!customItem){
-        qDebug()<< "slot item clicked widget is nullptr";
-        m_pressedItem = nullptr;
-        m_pressedItemWasSelected = false;
-        return;
-    }
-
-    auto itemType = customItem->GetItemType();
-    if(itemType == ListItemType::INVALID_ITEM
-        || itemType == ListItemType::GROUP_TIP_ITEM){
-        qDebug()<< "slot invalid item clicked ";
-        m_pressedItem = nullptr;
-        m_pressedItemWasSelected = false;
-        return;
-    }
-
-    if(itemType == ListItemType::CONTACT_USER_ITEM){
-        // 创建对话框，提示用户
         qDebug()<< "contact user item clicked ";
 
+        QWidget *widget = this->itemWidget(item); // 获取自定义widget对象
+        if(!widget){
+            qDebug()<< "slot item clicked widget is nullptr";
+            m_pressedItem = nullptr;
+            m_pressedItemWasSelected = false;
+            return;
+        }
+
+        // 对自定义widget进行操作， 将item 转化为基类ListItemBase
+        ListItemBase *customItem = qobject_cast<ListItemBase*>(widget);
+        if(!customItem){
+            qDebug()<< "slot item clicked widget is nullptr";
+            m_pressedItem = nullptr;
+            m_pressedItemWasSelected = false;
+            return;
+        }
         auto con_item = qobject_cast<ConUserItem*>(customItem);
         auto user_info = con_item->GetInfo();
         //跳转到好友信息界面

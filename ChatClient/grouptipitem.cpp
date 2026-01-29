@@ -23,3 +23,9 @@ QSize GroupTipItem::sizeHint() const
 {
     return QSize(200, 35); // 返回自定义的尺寸
 }
+
+void GroupTipItem::on_pushButton_clicked()
+{
+    emit sig_switch_apply_friend_page();
+}
+
